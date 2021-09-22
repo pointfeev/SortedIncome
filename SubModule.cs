@@ -8,6 +8,7 @@ namespace SortedIncome
     public class SubModule : MBSubModuleBase
     {
         private bool harmonyPatched = false;
+
         protected override void OnBeforeInitialModuleScreenSetAsRoot()
         {
             if (!harmonyPatched)

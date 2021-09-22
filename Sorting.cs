@@ -27,7 +27,9 @@ namespace SortedIncome
 
         //                                   name, sorted list indexes
         private static readonly Dictionary<string, List<Tuple<int, bool>>> stringMentions = new Dictionary<string, List<Tuple<int, bool>>>();
+
         private static readonly List<ValueTuple<string, float>> sortedList = new List<ValueTuple<string, float>>();
+
         public static string GetIncrementedName(int indexInSortedList, string name, bool countAsIncrement = true, string countPrefix = "", Tuple<string, string> countSuffix = null)
         {
             if (countSuffix is null)

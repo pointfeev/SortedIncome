@@ -11,6 +11,7 @@ namespace SortedIncome
     public static class OutputUtils
     {
         private static readonly List<string> outputs = new List<string>();
+
         public static void DoOutputForException(Exception e)
         {
             string[] messageLines = e.Message.Split('\n');
