@@ -86,11 +86,7 @@ namespace SortedIncome
                 }
                 else if (name.Contains("Party wages "))
                 {
-                    name = GetIncrementedName(sortedIndex, "Party balance", countPrefix: "from ", countSuffix: new Tuple<string, string>(" party", " parties"));
-                }
-                else if (name.Contains("Income from Parties"))
-                {
-                    name = GetIncrementedName(sortedIndex, "Party balance", countAsIncrement: false, countPrefix: "from ", countSuffix: new Tuple<string, string>(" party", " parties"));
+                    name = GetIncrementedName(sortedIndex, "Party wages", countPrefix: "from ", countSuffix: new Tuple<string, string>(" party", " parties"));
                 }
                 else if (name.Contains("Caravan ("))
                 {
