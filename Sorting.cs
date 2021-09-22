@@ -82,11 +82,11 @@ namespace SortedIncome
                 string name = tuple.Item1;
                 if (name.Contains("Party wages Garrison of "))
                 {
-                    name = GetIncrementedName(sortedIndex, "Garrison wages", countSuffix: new Tuple<string, string>(" garrison", " garrisons"));
+                    name = GetIncrementedName(sortedIndex, "Garrison wages", countPrefix: "for ", countSuffix: new Tuple<string, string>(" garrison", " garrisons"));
                 }
                 else if (name.Contains("Party wages "))
                 {
-                    name = GetIncrementedName(sortedIndex, "Party wages", countPrefix: "from ", countSuffix: new Tuple<string, string>(" party", " parties"));
+                    name = GetIncrementedName(sortedIndex, "Party wages", countPrefix: "for ", countSuffix: new Tuple<string, string>(" party", " parties"));
                 }
                 else if (name.Contains("Caravan ("))
                 {

@@ -42,11 +42,11 @@ namespace SortedIncome.Mods
                 }
                 else if (name.Contains("Garrisonguards wages"))
                 {
-                    name = Sorting.GetIncrementedName(sortedIndex, "Garrisonguard wages", countSuffix: new Tuple<string, string>(" garrisonguard", " garrisonguards"));
+                    name = Sorting.GetIncrementedName(sortedIndex, "Garrisonguard wages", countPrefix: "for ", countSuffix: new Tuple<string, string>(" garrisonguard", " garrisonguards"));
                 }
                 else if (name.Contains("costs"))
                 {
-                    name = Sorting.GetIncrementedName(sortedIndex, "Garrison recruiter wages", countSuffix: new Tuple<string, string>(" garrison recruiter", " garrison recruiters"));
+                    name = Sorting.GetIncrementedName(sortedIndex, "Garrison recruiter wages", countPrefix: "for ", countSuffix: new Tuple<string, string>(" garrison recruiter", " garrison recruiters"));
                 }
                 else if (name.Contains("finance help"))
                 {
