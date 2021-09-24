@@ -15,7 +15,7 @@ namespace SortedIncome
         {
             string[] stackTrace = e.StackTrace.Split('\n');
             string location = "STACK TRACE\n";
-            for (int i = 0; i <= 3; i++)
+            for (int i = 0; i <= 5; i++)
             {
                 string line = stackTrace.ElementAtOrValue(i, null);
                 if (!(line is null))
