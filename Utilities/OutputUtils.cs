@@ -21,7 +21,6 @@ namespace SortedIncome
                 if (!(line is null))
                 {
                     location += "\n    " + line.Substring(line.IndexOf("at"));
-                    break;
                 }
             }
             string[] messageLines = e.Message.Split('\n');
