@@ -13,35 +13,48 @@ namespace SortedIncome
 
         public static void DoOutputForException(Exception e)
         {
-            string[] stackTrace = e.StackTrace.Split('\n');
+            string[] stackTrace = e.StackTrace?.Split('\n');
             string location = "STACK TRACE\n";
-            for (int i = 0; i <= 5; i++)
+            if (stackTrace is null || stackTrace.Length == 0)
             {
-                string line = stackTrace.ElementAtOrValue(i, null);
-                if (!(line is null))
+                location = string.Empty;
+            }
+            else
+            {
+                for (int i = 0; i <= 5; i++)
                 {
-                    location += "\n    " + line.Substring(line.IndexOf("at"));
+                    string line = stackTrace.ElementAtOrValue(i, null);
+                    if (!(line is null))
+                    {
+                        location += "\n    " + line.Substring(line.IndexOf("at"));
+                    }
                 }
             }
-            string[] messageLines = e.Message.Split('\n');
+            string[] messageLines = e.Message?.Split('\n');
             string message = "MESSAGE\n";
-            for (int i = 0; i <= messageLines.Length; i++)
+            if (messageLines is null || messageLines.Length == 0)
             {
-                string line = messageLines.ElementAtOrValue(i, null);
-                if (!(line is null))
+                message = string.Empty;
+            }
+            else
+            {
+                for (int i = 0; i <= messageLines.Length; i++)
                 {
-                    message += "\n    " + messageLines[i];
+                    string line = messageLines.ElementAtOrValue(i, null);
+                    if (!(line is null))
+                    {
+                        message += "\n    " + messageLines[i];
+                    }
                 }
             }
-            string output = location + "\n\n" + message +
-                "\n\nBUG REPORTING: The easiest way to report this error is to snap an image of this message box with Snipping Tool or Lightshot," +
+            string output = location + (location.Length == 0 ? string.Empty : "\n\n") + message + (message.Length == 0 ? string.Empty : "\n\n") +
+                "BUG REPORTING: The easiest way to report this error is to snap an image of this message box with Snipping Tool or Lightshot, " +
                 "upload the image to imgur.com, and paste the link to the image in a new bug report on Nexus Mods (along with any helpful details)." +
                 "\n\nNOTE: This is not a game crash; press OK to continue playing.";
             if (!outputs.Contains(output))
             {
                 outputs.Add(output);
                 MessageBox.Show(output, caption: "Sorted Income encountered an exception", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Error);
-                //InformationManager.DisplayMessage(new InformationMessage(output, Colors.Red, "SortedIncome"));
             }
         }
 
