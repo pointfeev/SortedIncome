@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
 
-namespace SortedIncome.Mods
+namespace SortedIncome.Compatibility.Mods
 {
     public static class ImprovedGarrisonsMod
     {

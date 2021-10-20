@@ -11,13 +11,10 @@ namespace SortedIncome
         {
             foreach (Type type in typeof(ModCompatibility).Assembly.GetTypes())
             {
-                if (type.Namespace == "SortedIncome.Mods")
+                if (type.Namespace == "SortedIncome.Compatibility.Mods")
                 {
                     MethodInfo method = type.GetMethod(methodName);
-                    if (!(method is null))
-                    {
-                        method.Invoke(null, parameters);
-                    }
+                    if (!(method is null)) method.Invoke(null, parameters);
                 }
             }
         }
