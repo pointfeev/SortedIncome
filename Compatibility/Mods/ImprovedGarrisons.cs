@@ -24,7 +24,7 @@ namespace SortedIncome.Compatibility.Mods
             }
         }
 
-        public static void CalculateImprovedGarrisonCosts(ref ExplainedNumber __result, bool includeDescriptions = false)
+        public static void CalculateImprovedGarrisonCosts(ref ExplainedNumber __result, bool includeDescriptions)
         {
             __result = Sorting.Sort(__result, includeDescriptions);
         }
