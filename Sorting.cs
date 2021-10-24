@@ -95,12 +95,12 @@ namespace SortedIncome
                     name = GetIncrementedName(sortedIndex, "Castle tax", countPrefix: "from ", countSuffix: new Tuple<string, string>(" castle", " castles"));
                 else if (!(settlement is null) && settlement.IsTown)
                     name = GetIncrementedName(sortedIndex, "Town tax & tariffs", countAsIncrement: false, countPrefix: "from ", countSuffix: new Tuple<string, string>(" town", " towns"));
-                else if (name.Contains("Improved Garrison"))
-                    name = GetIncrementedName(sortedIndex, "Garrison recruitment", countPrefix: "for ", countSuffix: new Tuple<string, string>(" settlement", " settlements"));
+                else if (name.Contains("Improved Garrison Training of "))
+                    name = GetIncrementedName(sortedIndex, "Garrison training", countPrefix: "for ", countSuffix: new Tuple<string, string>(" garrison", " garrisons"));
                 else if (name.Contains("Garrisonguards wages"))
                     name = GetIncrementedName(sortedIndex, "Garrisonguard wages", countPrefix: "for ", countSuffix: new Tuple<string, string>(" garrisonguard", " garrisonguards"));
                 else if (name.Contains("costs"))
-                    name = GetIncrementedName(sortedIndex, "Garrison recruiter wages", countPrefix: "for ", countSuffix: new Tuple<string, string>(" garrison recruiter", " garrison recruiters"));
+                    name = GetIncrementedName(sortedIndex, "Garrison recruitment", countPrefix: "for ", countSuffix: new Tuple<string, string>(" recruiter", " recruiters"));
                 else if (name.Contains("finance help"))
                     name = GetIncrementedName(sortedIndex, "Garrison financial help", countPrefix: "for ", countSuffix: new Tuple<string, string>(" garrison", " garrisons"));
                 sortedList.Insert(sortedIndex, new ValueTuple<string, float>(name, tuple.Item2));
