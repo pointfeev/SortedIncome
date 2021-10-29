@@ -18,15 +18,14 @@ namespace SortedIncome.Compatibility.Mods
             if (IsActive)
             {
                 harmony.Patch(
-                    original: AccessTools.Method(AccessTools.TypeByName("ImprovedGarrisons.Models.GarrisonCostModel"), "CalculateImprovedGarrisonCosts"),
-                    postfix: new HarmonyMethod(typeof(ImprovedGarrisonsMod), "CalculateImprovedGarrisonCosts")
+                    original: AccessTools.Method(AccessTools.TypeByName("ImprovedGarrisons.Models.GarrisonCostModel"), "CalculateClanExpenses"),
+                    postfix: new HarmonyMethod(typeof(DefaultClanFinanceModelPatch), "CalculateClanGoldChange")
+                );
+                harmony.Patch(
+                    original: AccessTools.Method(AccessTools.TypeByName("ImprovedGarrisons.Models.GarrisonCostModel"), "CalculateClanGoldChange"),
+                    postfix: new HarmonyMethod(typeof(DefaultClanFinanceModelPatch), "CalculateClanGoldChange")
                 );
             }
-        }
-
-        public static void CalculateImprovedGarrisonCosts(ref ExplainedNumber __result, bool includeDescriptions)
-        {
-            __result = Sorting.Sort(__result, includeDescriptions);
         }
     }
 }

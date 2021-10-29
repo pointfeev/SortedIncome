@@ -9,16 +9,8 @@ namespace SortedIncome
     {
         [HarmonyPostfix]
         [HarmonyPatch("CalculateClanGoldChange")]
-        public static void CalculateClanGoldChange(ref ExplainedNumber __result, bool includeDescriptions)
-        {
-            __result = Sorting.Sort(__result, includeDescriptions);
-        }
-
-        [HarmonyPostfix]
         [HarmonyPatch("CalculateClanIncome")]
-        public static void CalculateClanIncome(ref ExplainedNumber __result, bool includeDescriptions)
-        {
-            __result = Sorting.Sort(__result, includeDescriptions);
-        }
+        [HarmonyPatch("CalculateClanExpenses")]
+        public static void CalculateClanGoldChange(ref ExplainedNumber __result, bool includeDescriptions) => __result = Sorting.Sort(__result, includeDescriptions);
     }
 }
