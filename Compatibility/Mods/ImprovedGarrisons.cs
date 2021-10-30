@@ -1,7 +1,6 @@
 ﻿using HarmonyLib;
 using System;
 using System.Linq;
-using TaleWorlds.CampaignSystem;
 
 namespace SortedIncome.Compatibility.Mods
 {
