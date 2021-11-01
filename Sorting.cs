@@ -10,6 +10,7 @@ namespace SortedIncome
     {
         public static ExplainedNumber Sort(ExplainedNumber result, bool includeDescriptions)
         {
+            if (InputKey.LeftAlt.IsDown()) return result;
             try
             {
                 ExplainedNumber sortedGoldChange = new ExplainedNumber(includeDescriptions: includeDescriptions);
@@ -68,11 +69,6 @@ namespace SortedIncome
 
         private static void Sort(ExplainedNumber originalGoldChange, ref ExplainedNumber sortedGoldChange)
         {
-            if (InputKey.LeftAlt.IsDown())
-            {
-                sortedGoldChange = originalGoldChange;
-                return;
-            }
             List<ValueTuple<string, float>> originalList = originalGoldChange.GetLines();
             for (int i = originalList.Count - 1; i >= 0; i--)
             {
