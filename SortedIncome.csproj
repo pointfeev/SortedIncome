@@ -390,10 +390,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Compatibility\ModCompatibility.cs" />
-    <Compile Include="Compatibility\Mods\ImprovedGarrisons.cs" />
     <Compile Include="Sorting.cs" />
-    <Compile Include="Patches\DefaultClanFinanceModel.cs" />
     <Compile Include="SubModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utilities\OutputUtils.cs" />
