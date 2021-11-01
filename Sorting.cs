@@ -6,9 +6,9 @@ using TaleWorlds.Library;
 
 namespace SortedIncome
 {
-    public static class Sorting
+    internal static class Sorting
     {
-        public static ExplainedNumber Sort(ExplainedNumber result, bool includeDescriptions)
+        internal static ExplainedNumber Sort(ExplainedNumber result, bool includeDescriptions)
         {
             if (InputKey.LeftAlt.IsDown()) return result;
             try
@@ -31,7 +31,7 @@ namespace SortedIncome
 
         private static readonly List<ValueTuple<string, float>> sortedList = new List<ValueTuple<string, float>>();
 
-        public static string GetIncrementedName(int indexInSortedList, string name, bool countAsIncrement = true, string countPrefix = "", Tuple<string, string> countSuffix = null)
+        internal static string GetIncrementedName(int indexInSortedList, string name, bool countAsIncrement = true, string countPrefix = "", Tuple<string, string> countSuffix = null)
         {
             if (countSuffix is null)
             {

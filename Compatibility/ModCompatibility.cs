@@ -3,9 +3,9 @@ using System;
 
 namespace SortedIncome
 {
-    public static class ModCompatibility
+    internal static class ModCompatibility
     {
-        public static void PatchAll(Harmony harmony)
+        internal static void PatchAll(Harmony harmony)
         {
             foreach (Type type in typeof(ModCompatibility).Assembly.GetTypes())
                 if (type.Namespace == "SortedIncome.Compatibility.Mods")

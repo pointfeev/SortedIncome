@@ -7,11 +7,11 @@ using TaleWorlds.MountAndBlade;
 
 namespace SortedIncome
 {
-    public static class OutputUtils
+    internal static class OutputUtils
     {
         private static readonly List<string> outputs = new List<string>();
 
-        public static void DoOutputForException(Exception e)
+        internal static void DoOutputForException(Exception e)
         {
             string[] stackTrace = e.StackTrace?.Split('\n');
             string location = "STACK TRACE\n";
@@ -58,12 +58,12 @@ namespace SortedIncome
             }
         }
 
-        public static TextObject GetString(this DefaultClanFinanceModel instance, string str)
+        internal static TextObject GetString(this DefaultClanFinanceModel instance, string str)
         {
             return (TextObject)typeof(DefaultClanFinanceModel).GetProperty(str)?.GetValue(instance);
         }
 
-        public static TextObject AsTextObject(this string str)
+        internal static TextObject AsTextObject(this string str)
         {
             return new TextObject("{=!}" + str);
         }
