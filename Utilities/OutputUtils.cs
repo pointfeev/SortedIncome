@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
+
 using TaleWorlds.CampaignSystem.SandBox.GameComponents;
 using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade;
@@ -58,14 +59,8 @@ namespace SortedIncome
             }
         }
 
-        internal static TextObject GetString(this DefaultClanFinanceModel instance, string str)
-        {
-            return (TextObject)typeof(DefaultClanFinanceModel).GetProperty(str)?.GetValue(instance);
-        }
+        internal static TextObject GetString(this DefaultClanFinanceModel instance, string str) => (TextObject)typeof(DefaultClanFinanceModel).GetProperty(str)?.GetValue(instance);
 
-        internal static TextObject AsTextObject(this string str)
-        {
-            return new TextObject("{=!}" + str);
-        }
+        internal static TextObject AsTextObject(this string str) => new TextObject("{=!}" + str);
     }
 }

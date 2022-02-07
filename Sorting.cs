@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
@@ -8,10 +9,7 @@ namespace SortedIncome
 {
     internal static class Sorting
     {
-        internal static void SorterPatch(ref ExplainedNumber __result, bool includeDescriptions)
-        {
-            __result = Sort(__result, includeDescriptions);
-        }
+        internal static void SorterPatch(ref ExplainedNumber __result, bool includeDescriptions) => __result = Sort(__result, includeDescriptions);
 
         private static ExplainedNumber Sort(ExplainedNumber result, bool includeDescriptions)
         {
