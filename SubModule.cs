@@ -18,17 +18,26 @@ namespace SortedIncome
             {
                 harmonyPatched = true;
                 Harmony harmony = new Harmony("pointfeev.sortedincome");
-                HarmonyMethod harmonyMethod = new HarmonyMethod(typeof(Sorting), nameof(Sorting.SorterPatch));
+                HarmonyMethod sorterPatchDenars = new HarmonyMethod(typeof(Sorting), nameof(Sorting.SorterPatchDenars));
                 Type defaultClanFinanceModel = AccessTools.TypeByName("TaleWorlds.CampaignSystem.SandBox.GameComponents.DefaultClanFinanceModel");
-                harmony.Patch(original: AccessTools.Method(defaultClanFinanceModel, "CalculateClanGoldChange"), postfix: harmonyMethod);
-                harmony.Patch(original: AccessTools.Method(defaultClanFinanceModel, "CalculateClanIncome"), postfix: harmonyMethod);
-                harmony.Patch(original: AccessTools.Method(defaultClanFinanceModel, "CalculateClanExpenses"), postfix: harmonyMethod);
-                Type garrisonCostModel = AccessTools.TypeByName("ImprovedGarrisons.Models.GarrisonCostModel");
-                if (!(garrisonCostModel is null))
+                harmony.Patch(original: AccessTools.Method(defaultClanFinanceModel, "CalculateClanGoldChange"), postfix: sorterPatchDenars);
+                harmony.Patch(original: AccessTools.Method(defaultClanFinanceModel, "CalculateClanIncome"), postfix: sorterPatchDenars);
+                harmony.Patch(original: AccessTools.Method(defaultClanFinanceModel, "CalculateClanExpenses"), postfix: sorterPatchDenars);
+                Type improvedGarrisonsCostModel = AccessTools.TypeByName("ImprovedGarrisons.Models.GarrisonCostModel");
+                if (!(improvedGarrisonsCostModel is null))
                 {
-                    harmony.Patch(original: AccessTools.Method(garrisonCostModel, "CalculateClanGoldChange"), postfix: harmonyMethod);
-                    harmony.Patch(original: AccessTools.Method(garrisonCostModel, "CalculateClanExpenses"), postfix: harmonyMethod);
+                    harmony.Patch(original: AccessTools.Method(improvedGarrisonsCostModel, "CalculateClanGoldChange"), postfix: sorterPatchDenars);
+                    harmony.Patch(original: AccessTools.Method(improvedGarrisonsCostModel, "CalculateClanExpenses"), postfix: sorterPatchDenars);
                     InformationManager.DisplayMessage(new InformationMessage("Sorted Income patched for Improved Garrisons", Colors.Yellow, "SortedIncome"));
+                }
+                HarmonyMethod sorterPatchInfluence = new HarmonyMethod(typeof(Sorting), nameof(Sorting.SorterPatchInfluence));
+                Type defaultClanPoliticsModel = AccessTools.TypeByName("TaleWorlds.CampaignSystem.SandBox.GameComponents.DefaultClanPoliticsModel");
+                harmony.Patch(original: AccessTools.Method(defaultClanPoliticsModel, "CalculateInfluenceChange"), postfix: sorterPatchInfluence);
+                Type populationsOfCalradiaInfluenceModel = AccessTools.TypeByName("Populations.Models.InfluenceModel");
+                if (!(populationsOfCalradiaInfluenceModel is null))
+                {
+                    harmony.Patch(original: AccessTools.Method(populationsOfCalradiaInfluenceModel, "CalculateInfluenceChange"), postfix: sorterPatchInfluence);
+                    InformationManager.DisplayMessage(new InformationMessage("Sorted Income patched for Populations of Calradia", Colors.Yellow, "SortedIncome"));
                 }
                 InformationManager.DisplayMessage(new InformationMessage("Sorted Income initialized", Colors.Yellow, "SortedIncome"));
             }
