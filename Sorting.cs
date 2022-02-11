@@ -20,8 +20,6 @@ namespace SortedIncome
             {
                 ExplainedNumber sortedChange = new ExplainedNumber(includeDescriptions: includeDescriptions);
                 Sort(result, ref sortedChange, form);
-                sortedChange.LimitMin(result.ResultNumber); // these 2 lines are to make sure income
-                sortedChange.LimitMax(result.ResultNumber); // gained each day isn't actually changed
                 return sortedChange;
             }
             catch (Exception e)
@@ -146,11 +144,8 @@ namespace SortedIncome
                 originalList.RemoveAt(i);
             }
             sortedList.Reverse();
-            for (int i = 0; i < sortedList.Count; i++)
-            {
-                ValueTuple<string, float> tuple = sortedList[i];
-                sortedChange.Add((int)tuple.Item2, tuple.Item1.AsTextObject());
-            }
+            foreach (ValueTuple<string, float> tuple in sortedList)
+                sortedChange.Add(tuple.Item2, tuple.Item1.AsTextObject());
             stringMentions.Clear();
             sortedList.Clear();
         }
