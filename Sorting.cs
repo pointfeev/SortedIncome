@@ -10,45 +10,83 @@ namespace SortedIncome
 {
     internal static class Sorting
     {
-        internal static void SorterPatchDenars(ref ExplainedNumber __result, bool includeDescriptions) => __result = Sort(__result, includeDescriptions, "Denars");
-        internal static void SorterPatchInfluence(ref ExplainedNumber __result, bool includeDescriptions) => __result = Sort(__result, includeDescriptions, "Influence");
+        internal static void Patch(ref List<(string name, float number)> __result) => __result = Sort(__result);
 
-        private static ExplainedNumber Sort(ExplainedNumber result, bool includeDescriptions, string form)
+        private static readonly Dictionary<string, (string prefix, (string singular, string plural) suffix)> countStrings
+            = new Dictionary<string, (string prefix, (string singular, string plural) suffix)>();
+
+        private static readonly Dictionary<string, (float number, int mentions)> lines = new Dictionary<string, (float number, int mentions)>();
+
+        private static List<(string name, float number)> Sort(List<(string name, float number)> __result)
         {
-            if (InputKey.LeftAlt.IsDown()) return result;
             try
             {
-                ExplainedNumber sortedChange = new ExplainedNumber(includeDescriptions: includeDescriptions);
-                Sort(result, ref sortedChange, form);
-                return sortedChange;
+                if (InputKey.LeftAlt.IsDown()) return __result;
+                countStrings.Clear();
+                lines.Clear();
+                List<(string name, float number)> result = new List<(string name, float number)>();
+                foreach ((string _name, float number) in __result)
+                {
+                    bool incrementMentions = true;
+                    string name = _name;
+                    if (TryGetKingdomPolicyFromName(name, out _))
+                        name = SetupSorting("Kingdom policies", "from ", (" policy", " policies"));
+                    else if (name.Contains("Party wages Garrison of "))
+                        name = SetupSorting("Garrison wages", "for ", (" garrison", " garrisons"));
+                    else if (name.Contains("Party wages "))
+                        name = SetupSorting("Party wages", "for ", (" party", " parties"));
+                    else if (name.Contains("Caravan ("))
+                        name = SetupSorting("Caravan balance", "from ", (" caravan", " caravans"));
+                    else if (name.Contains("'s tariff"))
+                        name = SetupSorting("Town tax & tariffs", "from ", (" town", " towns"));
+                    else if (name.Contains("Tribute from "))
+                        name = SetupSorting("Tribute", "from ", (" kingdom", " kingdoms"));
+                    else if (TryGetSettlementFromName(name, out Settlement settlement) && settlement.IsVillage)
+                        name = SetupSorting("Village tax", "from ", (" village", " villages"));
+                    else if (!(settlement is null) && settlement.IsCastle)
+                        name = SetupSorting("Castle tax", "from ", (" castle", " castles"));
+                    else if (!(settlement is null) && settlement.IsTown)
+                    {
+                        name = SetupSorting("Town tax & tariffs", "from ", (" town", " towns"));
+                        incrementMentions = false;
+                    }
+                    // Improved Garrisons support
+                    else if (name.Contains("Improved Garrison Training of "))
+                        name = SetupSorting("Garrison training", "for ", (" garrison", " garrisons"));
+                    else if (name.Contains("Garrisonguards wages"))
+                        name = SetupSorting("Garrisonguard wages", "for ", (" garrisonguard", " garrisonguards"));
+                    else if (name.Contains("costs"))
+                        name = SetupSorting("Garrison recruitment", "for ", (" recruiter", " recruiters"));
+                    else if (name.Contains("finance help"))
+                        name = SetupSorting("Garrison financial help", "for ", (" garrison", " garrisons"));
+                    // Population of Calradia support
+                    else if (name.Contains("Nobles influence from "))
+                        name = SetupSorting("Nobles influence", "from ", (" settlement", " settlements"));
+                    else if (name.Contains("Population growth policy at "))
+                        name = SetupSorting("Population growth policies", "at ", (" settlement", " settlements"));
+                    int increment = incrementMentions ? 1 : 0;
+                    lines[name] = lines.ContainsKey(name) ? (lines[name].number + number, lines[name].mentions + increment) : (number, increment);
+                }
+                foreach (KeyValuePair<string, (float number, int mentions)> line in lines)
+                    result.Add((GetFinalName(line.Key, line.Value.mentions), line.Value.number));
+                return result;
             }
             catch (Exception e)
             {
                 OutputUtils.DoOutputForException(e);
             }
-            return result;
+            return __result;
         }
 
-        //                                   name, sorted list indexes
-        private static readonly Dictionary<string, List<Tuple<int, bool>>> stringMentions = new Dictionary<string, List<Tuple<int, bool>>>();
-
-        private static readonly List<ValueTuple<string, float>> sortedList = new List<ValueTuple<string, float>>();
-
-        internal static string GetIncrementedName(int indexInSortedList, string name, bool countAsIncrement = true, string countPrefix = "", Tuple<string, string> countSuffix = null)
+        internal static string SetupSorting(string name, string countPrefix, (string singular, string plural) countSuffix)
         {
-            if (countSuffix is null) countSuffix = new Tuple<string, string>("", "");
-            if (stringMentions.TryGetValue(name, out List<Tuple<int, bool>> sortedListIndexes))
-            {
-                int count = sortedListIndexes.FindAll(tuple => tuple.Item2).Count + (countAsIncrement ? 1 : 0);
-                string incrementedName = name + (count > 0 ? $" ({countPrefix}{count}{(count == 1 ? countSuffix.Item1 : countSuffix.Item2)})" : "");
-                foreach (Tuple<int, bool> tuple in sortedListIndexes)
-                    sortedList[tuple.Item1] = new ValueTuple<string, float>(incrementedName, sortedList[tuple.Item1].Item2);
-                stringMentions[name].Add(new Tuple<int, bool>(indexInSortedList, countAsIncrement));
-                return incrementedName;
-            }
-            stringMentions[name] = new List<Tuple<int, bool>>() { new Tuple<int, bool>(indexInSortedList, countAsIncrement) };
-            return name + (countAsIncrement ? $" ({countPrefix}{1}{countSuffix.Item1})" : "");
+            if (!countStrings.ContainsKey(name)) countStrings[name] = (countPrefix, countSuffix);
+            return name;
         }
+
+        internal static string GetFinalName(string name, int mentions) =>
+            !countStrings.TryGetValue(name, out (string prefix, (string singular, string plural) suffix) strings) ? name
+                : name + $" ({strings.prefix}{mentions}{(mentions == 1 ? strings.suffix.singular : strings.suffix.plural)})";
 
         private static bool TryGetSettlementFromName(string name, out Settlement settlement)
         {
@@ -89,65 +127,6 @@ namespace SortedIncome
             }
             policy = null;
             return false;
-        }
-
-        private static void Sort(ExplainedNumber originalChange, ref ExplainedNumber sortedChange, string form)
-        {
-            List<ValueTuple<string, float>> originalList = originalChange.GetLines();
-            for (int i = originalList.Count - 1; i >= 0; i--)
-            {
-                int sortedIndex = sortedList.Count;
-                ValueTuple<string, float> tuple = originalList[i];
-                string name = tuple.Item1;
-                if (form == "Denars")
-                {
-                    if (TryGetKingdomPolicyFromName(name, out _))
-                        name = GetIncrementedName(sortedIndex, "Kingdom policies", countPrefix: "from ", countSuffix: new Tuple<string, string>(" policy", " policies"));
-                    else if (name.Contains("Party wages Garrison of "))
-                        name = GetIncrementedName(sortedIndex, "Garrison wages", countPrefix: "for ", countSuffix: new Tuple<string, string>(" garrison", " garrisons"));
-                    else if (name.Contains("Party wages "))
-                        name = GetIncrementedName(sortedIndex, "Party wages", countPrefix: "for ", countSuffix: new Tuple<string, string>(" party", " parties"));
-                    else if (name.Contains("Caravan ("))
-                        name = GetIncrementedName(sortedIndex, "Caravan balance", countPrefix: "from ", countSuffix: new Tuple<string, string>(" caravan", " caravans"));
-                    else if (name.Contains("'s tariff"))
-                        name = GetIncrementedName(sortedIndex, "Town tax & tariffs", countPrefix: "from ", countSuffix: new Tuple<string, string>(" town", " towns"));
-                    else if (name.Contains("Tribute from "))
-                        name = GetIncrementedName(sortedIndex, "Tribute", countPrefix: "from ", countSuffix: new Tuple<string, string>(" kingdom", " kingdoms"));
-                    else if (TryGetSettlementFromName(name, out Settlement settlement) && settlement.IsVillage)
-                        name = GetIncrementedName(sortedIndex, "Village tax", countPrefix: "from ", countSuffix: new Tuple<string, string>(" village", " villages"));
-                    else if (!(settlement is null) && settlement.IsCastle)
-                        name = GetIncrementedName(sortedIndex, "Castle tax", countPrefix: "from ", countSuffix: new Tuple<string, string>(" castle", " castles"));
-                    else if (!(settlement is null) && settlement.IsTown)
-                        name = GetIncrementedName(sortedIndex, "Town tax & tariffs", countAsIncrement: false, countPrefix: "from ", countSuffix: new Tuple<string, string>(" town", " towns"));
-                    // Improved Garrisons support
-                    else if (name.Contains("Improved Garrison Training of "))
-                        name = GetIncrementedName(sortedIndex, "Garrison training", countPrefix: "for ", countSuffix: new Tuple<string, string>(" garrison", " garrisons"));
-                    else if (name.Contains("Garrisonguards wages"))
-                        name = GetIncrementedName(sortedIndex, "Garrisonguard wages", countPrefix: "for ", countSuffix: new Tuple<string, string>(" garrisonguard", " garrisonguards"));
-                    else if (name.Contains("costs"))
-                        name = GetIncrementedName(sortedIndex, "Garrison recruitment", countPrefix: "for ", countSuffix: new Tuple<string, string>(" recruiter", " recruiters"));
-                    else if (name.Contains("finance help"))
-                        name = GetIncrementedName(sortedIndex, "Garrison financial help", countPrefix: "for ", countSuffix: new Tuple<string, string>(" garrison", " garrisons"));
-                }
-                else if (form == "Influence")
-                {
-                    if (TryGetKingdomPolicyFromName(name, out _))
-                        name = GetIncrementedName(sortedIndex, "Kingdom policies", countPrefix: "from ", countSuffix: new Tuple<string, string>(" policy", " policies"));
-                    // Population of Calradia support
-                    else if (name.Contains("Nobles influence from "))
-                        name = GetIncrementedName(sortedIndex, "Nobles influence", countPrefix: "from ", countSuffix: new Tuple<string, string>(" settlement", " settlements"));
-                    else if (name.Contains("Population growth policy at "))
-                        name = GetIncrementedName(sortedIndex, "Population growth policies", countPrefix: "at ", countSuffix: new Tuple<string, string>(" settlement", " settlements"));
-                }
-
-                sortedList.Insert(sortedIndex, new ValueTuple<string, float>(name, tuple.Item2));
-                originalList.RemoveAt(i);
-            }
-            sortedList.Reverse();
-            foreach (ValueTuple<string, float> tuple in sortedList)
-                sortedChange.Add(tuple.Item2, tuple.Item1.AsTextObject());
-            stringMentions.Clear();
-            sortedList.Clear();
         }
     }
 }
