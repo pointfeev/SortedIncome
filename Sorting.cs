@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.Core;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 
@@ -32,38 +33,42 @@ namespace SortedIncome
                 {
                     bool incrementMentions = true;
                     string name = _name;
-                    if (TryGetKingdomPolicyFromName(name, out _))
-                        name = SetupSorting("Kingdom policies", "from ", (" policy", " policies"));
-                    else if (name.Contains("Party wages Garrison of "))
-                        name = SetupSorting("Garrison wages", "for ", (" garrison", " garrisons"));
-                    else if (name.Contains("Party wages "))
-                        name = SetupSorting("Party wages", "for ", (" party", " parties"));
-                    else if (name.Contains("Caravan ("))
-                        name = SetupSorting("Caravan balance", "from ", (" caravan", " caravans"));
-                    else if (name.Contains("Tribute from "))
-                        name = SetupSorting("Tribute", "from ", (" kingdom", " kingdoms"));
-                    else if (TryGetSettlementFromName(name, out Settlement settlement) && settlement.IsVillage)
+                    if (TryGetSettlementFromName(name, out Settlement settlement) && settlement.IsVillage) // denars, food
                         name = SetupSorting("Village tax", "from ", (" village", " villages"));
-                    else if (!(settlement is null) && settlement.IsCastle)
+                    else if (!(settlement is null) && settlement.IsCastle) // denars
                         name = SetupSorting("Castle tax", "from ", (" castle", " castles"));
-                    else if (name.Contains("'s tariff") || !(settlement is null) && settlement.IsTown)
+                    else if (name.Contains("'s tariff") || !(settlement is null) && settlement.IsTown)  // denars
                     {
                         name = SetupSorting("Town tax & tariffs", "from ", (" town", " towns"));
                         if (!(settlement is null) && settlement.IsTown) incrementMentions = false;
                     }
+                    else if (TryGetKingdomPolicyFromName(name, out _)) // denars, influence
+                        name = SetupSorting("Kingdom policies", "from ", (" policy", " policies"));
+                    else if (name.Contains("Party wages Garrison of ")) // denars
+                        name = SetupSorting("Garrison wages", "for ", (" garrison", " garrisons"));
+                    else if (name.Contains("Party wages ")) // denars
+                        name = SetupSorting("Party wages", "for ", (" party", " parties"));
+                    else if (name.Contains("Caravan (")) // denars
+                        name = SetupSorting("Caravan balance", "from ", (" caravan", " caravans"));
+                    else if (name.Contains("Tribute from ")) // denars
+                        name = SetupSorting("Tribute", "from ", (" kingdom", " kingdoms"));
+                    else if (TryGetBuildingTypeFromName(name, out BuildingType buildingType) && buildingType.GetBaseBuildingEffectAmount(BuildingEffectEnum.FoodProduction, buildingType.StartLevel) > 0) // food
+                        name = SetupSorting("Building production", "from ", (" building", " buildings"));
+                    else if (TryGetItemCategoryFromName(name, out ItemCategory itemCategory) && itemCategory.Properties == ItemCategory.Property.BonusToFoodStores) // food
+                        name = SetupSorting("Sold food goods", "from ", (" good", " goods"));
                     // Improved Garrisons support
-                    else if (name.Contains("Improved Garrison Training of "))
+                    else if (name.Contains("Improved Garrison Training of ")) // denars
                         name = SetupSorting("Garrison training", "for ", (" garrison", " garrisons"));
-                    else if (name.Contains("Garrisonguards wages"))
+                    else if (name.Contains("Garrisonguards wages")) // denars
                         name = SetupSorting("Garrisonguard wages", "for ", (" garrisonguard", " garrisonguards"));
-                    else if (name.Contains("costs"))
+                    else if (name.Contains("costs")) // denars
                         name = SetupSorting("Garrison recruitment", "for ", (" recruiter", " recruiters"));
-                    else if (name.Contains("finance help"))
+                    else if (name.Contains("finance help")) // denars
                         name = SetupSorting("Garrison financial help", "for ", (" garrison", " garrisons"));
-                    // Population of Calradia support
-                    else if (name.Contains("Nobles influence from "))
+                    // Populations of Calradia support
+                    else if (name.Contains("Nobles influence from ")) // influence
                         name = SetupSorting("Nobles influence", "from ", (" settlement", " settlements"));
-                    else if (name.Contains("Population growth policy at "))
+                    else if (name.Contains("Population growth policy at ")) // influence
                         name = SetupSorting("Population growth policies", "at ", (" settlement", " settlements"));
                     int increment = incrementMentions ? 1 : 0;
                     lines[name] = lines.ContainsKey(name) ? (lines[name].number + number, lines[name].mentions + increment) : (number, increment);
@@ -104,23 +109,60 @@ namespace SortedIncome
             return false;
         }
 
-        private static readonly Dictionary<string, PolicyObject> defaultPolicyCache = new Dictionary<string, PolicyObject>();
-        private static bool TryGetKingdomPolicyFromName(string name, out PolicyObject policy)
+        private static MBReadOnlyList<PolicyObject> policies = null;
+        private static readonly Dictionary<string, PolicyObject> policyObjectCache = new Dictionary<string, PolicyObject>();
+        private static bool TryGetKingdomPolicyFromName(string name, out PolicyObject policyObject)
         {
-            if (defaultPolicyCache.TryGetValue(name, out policy))
-                return !(policy is null);
-            foreach (PropertyInfo property in typeof(DefaultPolicies).GetProperties(BindingFlags.Public | BindingFlags.Static))
-                if (property.PropertyType == typeof(PolicyObject))
+            if (policyObjectCache.TryGetValue(name, out policyObject))
+                return !(policyObject is null);
+            if (policies is null) policies = (MBReadOnlyList<PolicyObject>)typeof(Campaign)
+                    .GetProperty("AllPolicies", (BindingFlags)(-1)).GetMethod.Invoke(Campaign.Current, new object[0]);
+            foreach (PolicyObject _policyObject in policies)
+                if (_policyObject.Name.ToString() == name)
                 {
-                    PolicyObject policyObject = (PolicyObject)property.GetValue(null, null);
-                    if (!(policyObject is null) && policyObject.Name.ToString() == name)
-                    {
-                        defaultPolicyCache[name] = policyObject;
-                        policy = policyObject;
-                        return true;
-                    }
+                    policyObject = _policyObject;
+                    policyObjectCache[name] = policyObject;
+                    return true;
                 }
-            defaultPolicyCache[name] = null;
+            policyObjectCache[name] = null;
+            return false;
+        }
+
+        private static MBReadOnlyList<BuildingType> buildingTypes = null;
+        private static readonly Dictionary<string, BuildingType> buildingTypesCache = new Dictionary<string, BuildingType>();
+        private static bool TryGetBuildingTypeFromName(string name, out BuildingType buildingType)
+        {
+            if (buildingTypesCache.TryGetValue(name, out buildingType))
+                return !(buildingType is null);
+            if (buildingTypes is null) buildingTypes = (MBReadOnlyList<BuildingType>)typeof(Campaign)
+                    .GetProperty("AllBuildingTypes", (BindingFlags)(-1)).GetMethod.Invoke(Campaign.Current, new object[0]);
+            foreach (BuildingType _buildingType in buildingTypes)
+                if (_buildingType.Name.ToString() == name)
+                {
+                    buildingType = _buildingType;
+                    buildingTypesCache[name] = buildingType;
+                    return true;
+                }
+            buildingTypesCache[name] = null;
+            return false;
+        }
+
+        private static MBReadOnlyList<ItemCategory> itemCategories = null;
+        private static readonly Dictionary<string, ItemCategory> itemCategoryCache = new Dictionary<string, ItemCategory>();
+        private static bool TryGetItemCategoryFromName(string name, out ItemCategory itemCategory)
+        {
+            if (itemCategoryCache.TryGetValue(name, out itemCategory))
+                return !(itemCategory is null);
+            if (itemCategories is null) itemCategories = (MBReadOnlyList<ItemCategory>)typeof(Campaign)
+                    .GetProperty("AllItemCategories", (BindingFlags)(-1)).GetMethod.Invoke(Campaign.Current, new object[0]);
+            foreach (ItemCategory _itemCategory in itemCategories)
+                if (_itemCategory.GetName().ToString() == name)
+                {
+                    itemCategory = _itemCategory;
+                    itemCategoryCache[name] = itemCategory;
+                    return true;
+                }
+            itemCategoryCache[name] = null;
             return false;
         }
     }
