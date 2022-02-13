@@ -61,11 +61,13 @@ namespace SortedIncome
                         name = SetupSorting("Garrison training", "for ", (" garrison", " garrisons"));
                     else if (name.Contains("Garrisonguards wages")) // denars
                         name = SetupSorting("Garrisonguard wages", "for ", (" garrisonguard", " garrisonguards"));
-                    else if (name.Contains("costs")) // denars
+                    else if (name.Contains(" costs")) // denars
                         name = SetupSorting("Garrison recruitment", "for ", (" recruiter", " recruiters"));
                     else if (name.Contains("finance help")) // denars
                         name = SetupSorting("Garrison financial help", "for ", (" garrison", " garrisons"));
                     // Populations of Calradia support
+                    else if (name.Contains("Excess noble population at ")) // influence
+                        name = SetupSorting("Excess noble population", "at ", (" settlement", " settlements"));
                     else if (name.Contains("Nobles influence from ")) // influence
                         name = SetupSorting("Nobles influence", "from ", (" settlement", " settlements"));
                     else if (name.Contains("Population growth policy at ")) // influence
