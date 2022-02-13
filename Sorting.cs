@@ -10,7 +10,11 @@ namespace SortedIncome
 {
     internal static class Sorting
     {
-        internal static void Patch(ref List<(string name, float number)> __result) => __result = Sort(__result);
+        internal static void Patch(ref List<(string name, float number)> __result)
+        {
+            if (InputKey.LeftAlt.IsDown()) return;
+            __result = Sort(__result);
+        }
 
         private static readonly Dictionary<string, (string prefix, (string singular, string plural) suffix)> countStrings
             = new Dictionary<string, (string prefix, (string singular, string plural) suffix)>();
@@ -21,7 +25,6 @@ namespace SortedIncome
         {
             try
             {
-                if (InputKey.LeftAlt.IsDown()) return __result;
                 countStrings.Clear();
                 lines.Clear();
                 List<(string name, float number)> result = new List<(string name, float number)>();
@@ -37,18 +40,16 @@ namespace SortedIncome
                         name = SetupSorting("Party wages", "for ", (" party", " parties"));
                     else if (name.Contains("Caravan ("))
                         name = SetupSorting("Caravan balance", "from ", (" caravan", " caravans"));
-                    else if (name.Contains("'s tariff"))
-                        name = SetupSorting("Town tax & tariffs", "from ", (" town", " towns"));
                     else if (name.Contains("Tribute from "))
                         name = SetupSorting("Tribute", "from ", (" kingdom", " kingdoms"));
                     else if (TryGetSettlementFromName(name, out Settlement settlement) && settlement.IsVillage)
                         name = SetupSorting("Village tax", "from ", (" village", " villages"));
                     else if (!(settlement is null) && settlement.IsCastle)
                         name = SetupSorting("Castle tax", "from ", (" castle", " castles"));
-                    else if (!(settlement is null) && settlement.IsTown)
+                    else if (name.Contains("'s tariff") || !(settlement is null) && settlement.IsTown)
                     {
                         name = SetupSorting("Town tax & tariffs", "from ", (" town", " towns"));
-                        incrementMentions = false;
+                        if (!(settlement is null) && settlement.IsTown) incrementMentions = false;
                     }
                     // Improved Garrisons support
                     else if (name.Contains("Improved Garrison Training of "))
@@ -106,26 +107,20 @@ namespace SortedIncome
         private static readonly Dictionary<string, PolicyObject> defaultPolicyCache = new Dictionary<string, PolicyObject>();
         private static bool TryGetKingdomPolicyFromName(string name, out PolicyObject policy)
         {
-            if (defaultPolicyCache.TryGetValue(name, out PolicyObject _policy))
-            {
-                policy = _policy;
-                return true;
-            }
-            else
-            {
-                foreach (PropertyInfo property in typeof(DefaultPolicies).GetProperties(BindingFlags.Public | BindingFlags.Static))
-                    if (property.PropertyType == typeof(PolicyObject))
+            if (defaultPolicyCache.TryGetValue(name, out policy))
+                return !(policy is null);
+            foreach (PropertyInfo property in typeof(DefaultPolicies).GetProperties(BindingFlags.Public | BindingFlags.Static))
+                if (property.PropertyType == typeof(PolicyObject))
+                {
+                    PolicyObject policyObject = (PolicyObject)property.GetValue(null, null);
+                    if (!(policyObject is null) && policyObject.Name.ToString() == name)
                     {
-                        PolicyObject policyObject = (PolicyObject)property.GetValue(null, null);
-                        if (!(policyObject is null) && policyObject.Name.ToString() == name)
-                        {
-                            defaultPolicyCache.Add(name, policyObject);
-                            policy = policyObject;
-                            return true;
-                        }
+                        defaultPolicyCache[name] = policyObject;
+                        policy = policyObject;
+                        return true;
                     }
-            }
-            policy = null;
+                }
+            defaultPolicyCache[name] = null;
             return false;
         }
     }
