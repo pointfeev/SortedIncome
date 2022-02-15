@@ -3,7 +3,7 @@ using TaleWorlds.Localization;
 
 namespace SortedIncome
 {
-    internal static class Translation
+    internal static class TranslationUtils
     {
         internal const string ModPrefix = "si_";
 
