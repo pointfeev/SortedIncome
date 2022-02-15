@@ -34,44 +34,44 @@ namespace SortedIncome
                     bool incrementMentions = true;
                     string name = _name;
                     if (TryGetSettlementFromName(name, out Settlement settlement) && settlement.IsVillage) // denars, food
-                        name = SetupSorting("Village tax", "from ", (" village", " villages"));
+                        name = SetupSorting("Village tax", "from", ("village", "villages"));
                     else if (!(settlement is null) && settlement.IsCastle) // denars
-                        name = SetupSorting("Castle tax", "from ", (" castle", " castles"));
-                    else if (name.Contains("'s tariff") || !(settlement is null) && settlement.IsTown)  // denars
+                        name = SetupSorting("Castle tax", "from", ("castle", "castles"));
+                    else if (name.TranslatedContains("'s tariff") || !(settlement is null) && settlement.IsTown)  // denars
                     {
-                        name = SetupSorting("Town tax & tariffs", "from ", (" town", " towns"));
-                        if (!(settlement is null) && settlement.IsTown) incrementMentions = false;
+                        if (name.TranslatedContains("'s tariff")) incrementMentions = false;
+                        name = SetupSorting("Town tax & tariffs", "from", ("town", "towns"));
                     }
                     else if (TryGetKingdomPolicyFromName(name, out _)) // denars, influence
-                        name = SetupSorting("Kingdom policies", "from ", (" policy", " policies"));
-                    else if (name.Contains("Party wages Garrison of ")) // denars
-                        name = SetupSorting("Garrison wages", "for ", (" garrison", " garrisons"));
-                    else if (name.Contains("Party wages ")) // denars
-                        name = SetupSorting("Party wages", "for ", (" party", " parties"));
-                    else if (name.Contains("Caravan (")) // denars
-                        name = SetupSorting("Caravan balance", "from ", (" caravan", " caravans"));
-                    else if (name.Contains("Tribute from ")) // denars
-                        name = SetupSorting("Tribute", "from ", (" kingdom", " kingdoms"));
+                        name = SetupSorting("Kingdom policies", "from", ("policy", "policies"));
                     else if (TryGetBuildingTypeFromName(name, out BuildingType buildingType) && buildingType.GetBaseBuildingEffectAmount(BuildingEffectEnum.FoodProduction, buildingType.StartLevel) > 0) // food
-                        name = SetupSorting("Building production", "from ", (" building", " buildings"));
+                        name = SetupSorting("Building production", "from", ("building", "buildings"));
                     else if (TryGetItemCategoryFromName(name, out ItemCategory itemCategory) && itemCategory.Properties == ItemCategory.Property.BonusToFoodStores) // food
-                        name = SetupSorting("Sold food goods", "from ", (" good", " goods"));
+                        name = SetupSorting("Sold food goods", "from", ("good", "goods"));
+                    else if (name.TranslatedContains("Party wages Garrison of")) // denars
+                        name = SetupSorting("Garrison wages", "for", ("garrison", "garrisons"));
+                    else if (name.TranslatedContains("Party wages")) // denars
+                        name = SetupSorting("Party wages", "for", ("party", "parties"));
+                    else if (name.TranslatedContains("Caravan (")) // denars
+                        name = SetupSorting("Caravan balance", "from", ("caravan", "caravans"));
+                    else if (name.TranslatedContains("Tribute from")) // denars
+                        name = SetupSorting("Tribute", "from", ("kingdom", "kingdoms"));
                     // Improved Garrisons support
-                    else if (name.Contains("Improved Garrison Training of ")) // denars
-                        name = SetupSorting("Garrison training", "for ", (" garrison", " garrisons"));
-                    else if (name.Contains("Garrisonguards wages")) // denars
-                        name = SetupSorting("Garrisonguard wages", "for ", (" garrisonguard", " garrisonguards"));
-                    else if (name.Contains(" costs")) // denars
-                        name = SetupSorting("Garrison recruitment", "for ", (" recruiter", " recruiters"));
-                    else if (name.Contains("finance help")) // denars
-                        name = SetupSorting("Garrison financial help", "for ", (" garrison", " garrisons"));
+                    else if (name.TranslatedContains("Improved Garrison Training of")) // denars
+                        name = SetupSorting("Garrison training", "for", ("garrison", "garrisons"));
+                    else if (name.TranslatedContains("Garrisonguards wages")) // denars
+                        name = SetupSorting("Garrisonguard wages", "for", ("garrisonguard", "garrisonguards"));
+                    else if (name.TranslatedContains("costs")) // denars
+                        name = SetupSorting("Garrison recruitment", "for", ("recruiter", "recruiters"));
+                    else if (name.TranslatedContains("finance help")) // denars
+                        name = SetupSorting("Garrison financial help", "for", ("garrison", "garrisons"));
                     // Populations of Calradia support
-                    else if (name.Contains("Excess noble population at ")) // influence
-                        name = SetupSorting("Excess noble population", "at ", (" settlement", " settlements"));
-                    else if (name.Contains("Nobles influence from ")) // influence
-                        name = SetupSorting("Nobles influence", "from ", (" settlement", " settlements"));
-                    else if (name.Contains("Population growth policy at ")) // influence
-                        name = SetupSorting("Population growth policies", "at ", (" settlement", " settlements"));
+                    else if (name.TranslatedContains("Excess noble population at")) // influence
+                        name = SetupSorting("Excess noble population", "at", ("settlement", "settlements"));
+                    else if (name.TranslatedContains("Nobles influence from")) // influence
+                        name = SetupSorting("Nobles influence", "from", ("settlement", "settlements"));
+                    else if (name.TranslatedContains("Population growth policy at")) // influence
+                        name = SetupSorting("Population growth policies", "at", ("settlement", "settlements"));
                     int increment = incrementMentions ? 1 : 0;
                     lines[name] = lines.ContainsKey(name) ? (lines[name].number + number, lines[name].mentions + increment) : (number, increment);
                 }
@@ -88,13 +88,17 @@ namespace SortedIncome
 
         internal static string SetupSorting(string name, string countPrefix, (string singular, string plural) countSuffix)
         {
+            name = name.Translate();
+            countPrefix = countPrefix.Translate();
+            countSuffix.singular = countSuffix.singular.Translate();
+            countSuffix.plural = countSuffix.plural.Translate();
             if (!countStrings.ContainsKey(name)) countStrings[name] = (countPrefix, countSuffix);
             return name;
         }
 
         internal static string GetFinalName(string name, int mentions) =>
             !countStrings.TryGetValue(name, out (string prefix, (string singular, string plural) suffix) strings) ? name
-                : name + $" ({strings.prefix}{mentions}{(mentions == 1 ? strings.suffix.singular : strings.suffix.plural)})";
+                : name + $" ({strings.prefix} {mentions} {(mentions == 1 ? strings.suffix.singular : strings.suffix.plural)})";
 
         private static bool TryGetSettlementFromName(string name, out Settlement settlement)
         {
