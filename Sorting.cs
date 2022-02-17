@@ -59,10 +59,10 @@ namespace SortedIncome
                     // Improved Garrisons support
                     else if (name.TranslatedContains("Improved Garrison Training of")) // denars
                         name = SetupSorting("Garrison training", "for", ("garrison", "garrisons"));
-                    else if (name.TranslatedContains("Garrisonguards wages")) // denars
-                        name = SetupSorting("Garrisonguard wages", "for", ("garrisonguard", "garrisonguards"));
                     else if (name.TranslatedContains("costs")) // denars
                         name = SetupSorting("Garrison recruitment", "for", ("recruiter", "recruiters"));
+                    else if (name.TranslatedContains("Guard wages")) // denars
+                        name = SetupSorting("Garrison guard wages", "for", ("garrison guard", "garrison guards"));
                     else if (name.TranslatedContains("finance help")) // denars
                         name = SetupSorting("Garrison financial help", "for", ("garrison", "garrisons"));
                     // Populations of Calradia support
