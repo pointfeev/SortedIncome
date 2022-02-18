@@ -42,7 +42,7 @@ namespace SortedIncome
                         if (settlement is null || !settlement.IsTown) incrementMentions = false;
                         name = SetupSorting("Town tax & tariffs", "from", ("town", "towns"));
                     }
-                    else if (TryGetKingdomPolicyFromName(name, out _)) // denars, militia, food, loyalty, security, prosperity
+                    else if (TryGetKingdomPolicyFromName(name, out _)) // denars, militia, food, loyalty, security, prosperity, settlement tax
                         name = SetupSorting("Kingdom policies", "from", ("policy", "policies"));
                     else if (TryGetBuildingTypeFromName(name, out BuildingType buildingType) && buildingType.GetBaseBuildingEffectAmount(BuildingEffectEnum.FoodProduction, buildingType.StartLevel) > 0) // food
                         name = SetupSorting("Building production", "from", ("building", "buildings"));
