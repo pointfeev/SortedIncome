@@ -59,7 +59,7 @@ namespace SortedIncome
                     // Improved Garrisons support
                     else if (name.Parse("Improved Garrison Training of ", "{misc_costmodel_trainingcosts}")) // denars
                         name = SetupSorting("Garrison training", "for", ("garrison", "garrisons"));
-                    else if (name.Parse(" costs", "{misc_costs}")) // denars
+                    else if (name.Parse("Garrison Recruiter of ", "{party_recruiter_name}")) // denars
                         name = SetupSorting("Garrison recruitment", "for", ("recruiter", "recruiters"));
                     else if (name.Parse(" Guard wages", "{misc_guardwages}")) // denars
                         name = SetupSorting("Garrison guard wages", "for", ("garrison guard", "garrison guards"));
