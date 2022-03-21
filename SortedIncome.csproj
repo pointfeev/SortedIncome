@@ -43,12 +43,12 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Bannerlord.ReferenceAssemblies.EarlyAccess">
-      <Version>1.7.1.301506</Version>
+      <Version>1.7.1.306438</Version>
       <ExcludeAssets>runtime</ExcludeAssets>
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Lib.Harmony">
-      <Version>2.2.0</Version>
+      <Version>2.2.1</Version>
       <ExcludeAssets>runtime</ExcludeAssets>
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
