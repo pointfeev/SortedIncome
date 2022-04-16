@@ -104,13 +104,14 @@ namespace SortedIncome
 
         private static bool TryGetSettlementFromName(string name, out Settlement settlement)
         {
-            MBReadOnlyList<Settlement> settlements = Campaign.Current.Settlements;
-            foreach (Settlement _settlement in settlements)
-                if (_settlement.Name.ToString() == name)
-                {
-                    settlement = _settlement;
-                    return true;
-                }
+            MBReadOnlyList<Settlement> settlements = Campaign.Current?.Settlements;
+            if (!(settlements is null))
+                foreach (Settlement _settlement in settlements)
+                    if (_settlement?.Name?.ToString() == name)
+                    {
+                        settlement = _settlement;
+                        return true;
+                    }
             settlement = null;
             return false;
         }
@@ -121,12 +122,12 @@ namespace SortedIncome
         {
             if (policyObjectCache.TryGetValue(name, out policyObject))
                 return !(policyObject is null);
-            if (policies is null) policies = (MBReadOnlyList<PolicyObject>)typeof(Campaign)
-                    .GetProperty("AllPolicies", (BindingFlags)(-1)).GetMethod.Invoke(Campaign.Current, new object[0]);
+            if (policies is null) policies = (MBReadOnlyList<PolicyObject>)typeof(Campaign)?
+                    .GetProperty("AllPolicies", (BindingFlags)(-1))?.GetMethod?.Invoke(Campaign.Current, new object[0]);
             if (policies is null)
                 return false;
             foreach (PolicyObject _policyObject in policies)
-                if (_policyObject.Name.ToString() == name)
+                if (_policyObject?.Name?.ToString() == name)
                 {
                     policyObject = _policyObject;
                     policyObjectCache[name] = policyObject;
@@ -142,12 +143,12 @@ namespace SortedIncome
         {
             if (buildingTypesCache.TryGetValue(name, out buildingType))
                 return !(buildingType is null);
-            if (buildingTypes is null) buildingTypes = (MBReadOnlyList<BuildingType>)typeof(Campaign)
-                    .GetProperty("AllBuildingTypes", (BindingFlags)(-1)).GetMethod.Invoke(Campaign.Current, new object[0]);
+            if (buildingTypes is null) buildingTypes = (MBReadOnlyList<BuildingType>)typeof(Campaign)?
+                    .GetProperty("AllBuildingTypes", (BindingFlags)(-1))?.GetMethod?.Invoke(Campaign.Current, new object[0]);
             if (buildingTypes is null)
                 return false;
             foreach (BuildingType _buildingType in buildingTypes)
-                if (_buildingType.Name.ToString() == name)
+                if (_buildingType?.Name?.ToString() == name)
                 {
                     buildingType = _buildingType;
                     buildingTypesCache[name] = buildingType;
@@ -163,12 +164,12 @@ namespace SortedIncome
         {
             if (itemCategoryCache.TryGetValue(name, out itemCategory))
                 return !(itemCategory is null);
-            if (itemCategories is null) itemCategories = (MBReadOnlyList<ItemCategory>)typeof(Campaign)
-                    .GetProperty("AllItemCategories", (BindingFlags)(-1)).GetMethod.Invoke(Campaign.Current, new object[0]);
+            if (itemCategories is null) itemCategories = (MBReadOnlyList<ItemCategory>)typeof(Campaign)?
+                    .GetProperty("AllItemCategories", (BindingFlags)(-1))?.GetMethod?.Invoke(Campaign.Current, new object[0]);
             if (itemCategories is null)
                 return false;
             foreach (ItemCategory _itemCategory in itemCategories)
-                if (_itemCategory.GetName().ToString() == name)
+                if (_itemCategory?.GetName()?.ToString() == name)
                 {
                     itemCategory = _itemCategory;
                     itemCategoryCache[name] = itemCategory;
