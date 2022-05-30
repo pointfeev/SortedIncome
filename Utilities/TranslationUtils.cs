@@ -27,7 +27,6 @@ namespace SortedIncome
                 bool open = false;
                 char[] chars = translationTemplate.ToCharArray();
                 foreach (char c in chars)
-                {
                     if (c == '{')
                         open = true;
                     else if (c == '}')
@@ -50,7 +49,6 @@ namespace SortedIncome
                         currentID += c;
                     else
                         translation += c;
-                }
                 if (string.IsNullOrWhiteSpace(translation)) return false;
                 if (translation[translation.Length - 1] == ')') translation = translation.Substring(0, translation.Length - 1);
                 //InformationManager.DisplayMessage(new InformationMessage("'" + translationTemplate + "' => '" + translation + "'", Colors.Yellow, "SortedIncome"));
