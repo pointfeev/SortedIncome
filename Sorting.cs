@@ -50,10 +50,10 @@ namespace SortedIncome
                         name = SetupSorting("Building production", "from", ("building", "buildings"));
                     else if (TryGetItemCategoryFromName(name, out ItemCategory itemCategory) && itemCategory.Properties == ItemCategory.Property.BonusToFoodStores) // food
                         name = SetupSorting("Sold food goods", "from", ("good", "goods"));
-                    else if (name.Parse("Party wages ", "{iPDOLbi3}") && name.Parse("Garrison of ", "{frt7AmX0}")) // denars
-                        name = SetupSorting("Garrison wages", "for", ("garrison", "garrisons"));
-                    else if (!name.Parse("Main party wages", "{YkZKXsIn}") && name.Parse("Party wages ", "{iPDOLbi3}")) // denars
-                        name = SetupSorting("Party wages", "for", ("party", "parties"));
+                    else if (name.Parse("Party expenses ", "{dZDFxUvU}") && name.Parse("Garrison of ", "{frt7AmX0}")) // denars
+                        name = SetupSorting("Garrison expenses", "for", ("garrison", "garrisons"));
+                    else if (!name.Parse("Main party wages", "{YkZKXsIn}") && name.Parse("Party expenses ", "{dZDFxUvU}")) // denars
+                        name = SetupSorting("Party expenses", "for", ("party", "parties"));
                     else if (name.Parse("Caravan (", "{c2pdihCB}")) // denars
                         name = SetupSorting("Caravan balance", "from", ("caravan", "caravans"));
                     else if (name.Parse("Tribute from ", "{rhfgzKtA}")) // denars
