@@ -18,7 +18,7 @@ namespace SortedIncome
                 harmonyPatched = true;
                 Harmony harmony = new Harmony("pointfeev.sortedincome");
                 HarmonyMethod explainedNumberPatch = new HarmonyMethod(typeof(Sorting), nameof(Sorting.Patch));
-                harmony.Patch(original: AccessTools.Method(typeof(ExplainedNumber), "GetLines"), postfix: explainedNumberPatch);
+                _ = harmony.Patch(original: AccessTools.Method(typeof(ExplainedNumber), "GetLines"), postfix: explainedNumberPatch);
                 InformationManager.DisplayMessage(new InformationMessage("Sorted Income initialized", Colors.Yellow, "SortedIncome"));
             }
         }
