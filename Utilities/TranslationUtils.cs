@@ -15,7 +15,7 @@ namespace SortedIncome
 
         internal static string TranslateWithDynamicID(this string s) => new TextObject($"{{={s.GetDynamicTranslationID()}}}" + s).ToString();
 
-        internal static string TranslateID(this string id) => LocalizedTextManager.GetTranslatedText(MBTextManager.ActiveLanguage, id) ?? string.Empty;
+        internal static string TranslateID(this string id) => LocalizedTextManager.GetTranslatedText(MBTextManager.ActiveTextLanguage, id) ?? string.Empty;
 
         internal static bool Parse(this string name, string contains, string translationTemplate = null)
         {
