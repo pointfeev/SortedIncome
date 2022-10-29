@@ -61,13 +61,13 @@ namespace SortedIncome
                     // Improved Garrisons support
                     else if (name.Parse("Improved Garrison Training of ", "{misc_costmodel_trainingcosts}")) // denars
                         name = SetupSorting("Garrison training", "for", ("garrison", "garrisons"));
-                    else if (name.Parse("Garrison Recruiter of ", "{party_recruiter_name}")) // denars
-                        name = SetupSorting("Garrison recruitment", "for", ("recruiter", "recruiters"));
+                    else if (name.Parse("Improved Garrison Recruitment of ", "{misc_costmodel_recruitmentcosts}")) // denars
+                        name = SetupSorting("Garrison recruitment", "for", ("garrison", "garrisons"));
                     else if (name.Parse(" Guard wages", "{misc_guardwages}")) // denars
                         name = SetupSorting("Garrison guard wages", "for", ("garrison guard", "garrison guards"));
-                    else if (name.Parse(" finance help")) // denars
+                    else if (name.Parse(" finance help", "{rhKxsdtz}")) // denars
                         name = SetupSorting("Garrison financial help", "for", ("garrison", "garrisons"));
-                    // Populations of Calradia support
+                    // Populations of Calradia and Banner Kings support
                     else if (name.Parse("Excess noble population at ")) // influence
                         name = SetupSorting("Excess noble population", "at", ("settlement", "settlements"));
                     else if (name.Parse("Nobles influence from ")) // influence
