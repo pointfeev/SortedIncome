@@ -18,11 +18,7 @@ namespace SortedIncome
     internal static class Sorting
     {
         private static Func<List<TooltipProperty>> CurrentTooltipFunc;
-        internal static void BeginTooltip(Func<List<TooltipProperty>> ____tooltipProperties)
-        {
-            if (!(____tooltipProperties is null))
-                CurrentTooltipFunc = ____tooltipProperties;
-        }
+        internal static void BeginTooltip(Func<List<TooltipProperty>> ____tooltipProperties) => CurrentTooltipFunc = ____tooltipProperties;
 
         private static bool LeftAltDown = InputKey.LeftAlt.IsDown();
         internal static void TickTooltip()
@@ -102,7 +98,7 @@ namespace SortedIncome
                             ? (line.number + number, line.mentions + increment, Math.Max(line.textHeight, textHeight))
                             : (number, increment, textHeight);
                     }
-                    else if (start != -1 && end == -1) end = i;
+                    else if (start != -1 && end == -1) end = i - 1;
                 }
                 if (start == -1 || end == -1) return;
                 for (int i = end; i >= start; i--)
