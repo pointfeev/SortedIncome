@@ -19,10 +19,16 @@ namespace SortedIncome
     {
         private static Func<List<TooltipProperty>> CurrentTooltipFunc;
         internal static void BeginTooltip(Func<List<TooltipProperty>> ____tooltipProperties) => CurrentTooltipFunc = ____tooltipProperties;
+        internal static void ShowTooltip(Type type)
+        {
+            if (type != typeof(List<TooltipProperty>))
+                CurrentTooltipFunc = null;
+        }
 
         private static bool LeftAltDown = InputKey.LeftAlt.IsDown();
-        internal static void TickTooltip()
+        internal static void TickTooltip(PropertyBasedTooltipVM __instance)
         {
+            if (!__instance.IsActive) return;
             bool leftAltDown = InputKey.LeftAlt.IsDown();
             if (LeftAltDown != leftAltDown && !(CurrentTooltipFunc is null))
                 InformationManager.ShowTooltip(typeof(List<TooltipProperty>), CurrentTooltipFunc());

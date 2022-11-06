@@ -20,6 +20,8 @@ namespace SortedIncome
                 Harmony harmony = new Harmony("pointfeev.sortedincome");
                 HarmonyMethod begin = new HarmonyMethod(typeof(Sorting), nameof(Sorting.BeginTooltip));
                 _ = harmony.Patch(original: AccessTools.Method(typeof(BasicTooltipViewModel), nameof(BasicTooltipViewModel.ExecuteBeginHint)), postfix: begin);
+                HarmonyMethod show = new HarmonyMethod(typeof(Sorting), nameof(Sorting.ShowTooltip));
+                _ = harmony.Patch(original: AccessTools.Method(typeof(PropertyBasedTooltipVM), nameof(PropertyBasedTooltipVM.OnShowTooltip)), postfix: show);
                 HarmonyMethod tick = new HarmonyMethod(typeof(Sorting), nameof(Sorting.TickTooltip));
                 _ = harmony.Patch(original: AccessTools.Method(typeof(PropertyBasedTooltipVM), nameof(PropertyBasedTooltipVM.Tick)), postfix: tick);
                 HarmonyMethod get = new HarmonyMethod(typeof(Sorting), nameof(Sorting.GetTooltip));
