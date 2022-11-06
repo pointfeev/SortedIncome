@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Buildings;
 using TaleWorlds.Core;
@@ -102,80 +103,71 @@ namespace SortedIncome
             !countStrings.TryGetValue(name, out (string prefix, (string singular, string plural) suffix) strings) ? name
                 : name + $" ({strings.prefix} {mentions} {(mentions == 1 ? strings.suffix.singular : strings.suffix.plural)})";
 
+        private static MBReadOnlyList<Settlement> settlements;
+        private static readonly Dictionary<string, Settlement> settlementCache = new Dictionary<string, Settlement>();
         private static bool TryGetSettlementFromName(string name, out Settlement settlement)
         {
-            MBReadOnlyList<Settlement> settlements = Campaign.Current?.Settlements;
-            if (!(settlements is null))
+            if (settlementCache.TryGetValue(name, out settlement))
+                return !(settlement is null);
+            if (!(Campaign.Current is null) && !((settlements = Settlement.All) is null))
                 foreach (Settlement _settlement in settlements)
                     if (_settlement?.Name?.ToString() == name)
                     {
                         settlement = _settlement;
+                        settlementCache[name] = settlement;
                         return true;
                     }
-            settlement = null;
             return false;
         }
 
-        private static MBReadOnlyList<PolicyObject> policies = null;
+        private static MBReadOnlyList<PolicyObject> policyObjects;
         private static readonly Dictionary<string, PolicyObject> policyObjectCache = new Dictionary<string, PolicyObject>();
         private static bool TryGetKingdomPolicyFromName(string name, out PolicyObject policyObject)
         {
             if (policyObjectCache.TryGetValue(name, out policyObject))
                 return !(policyObject is null);
-            if (policies is null) policies = (MBReadOnlyList<PolicyObject>)typeof(Campaign)?
-                    .GetProperty("AllPolicies", (BindingFlags)(-1))?.GetMethod?.Invoke(Campaign.Current, new object[0]);
-            if (policies is null)
-                return false;
-            foreach (PolicyObject _policyObject in policies)
-                if (_policyObject?.Name?.ToString() == name)
-                {
-                    policyObject = _policyObject;
-                    policyObjectCache[name] = policyObject;
-                    return true;
-                }
-            policyObjectCache[name] = null;
+            if (!(Campaign.Current is null) && !((policyObjects = PolicyObject.All) is null))
+                foreach (PolicyObject _policyObject in policyObjects)
+                    if (_policyObject?.Name?.ToString() == name)
+                    {
+                        policyObject = _policyObject;
+                        policyObjectCache[name] = policyObject;
+                        return true;
+                    }
             return false;
         }
 
-        private static MBReadOnlyList<BuildingType> buildingTypes = null;
+        private static MBReadOnlyList<BuildingType> buildingTypes;
         private static readonly Dictionary<string, BuildingType> buildingTypesCache = new Dictionary<string, BuildingType>();
         private static bool TryGetBuildingTypeFromName(string name, out BuildingType buildingType)
         {
             if (buildingTypesCache.TryGetValue(name, out buildingType))
                 return !(buildingType is null);
-            if (buildingTypes is null) buildingTypes = (MBReadOnlyList<BuildingType>)typeof(Campaign)?
-                    .GetProperty("AllBuildingTypes", (BindingFlags)(-1))?.GetMethod?.Invoke(Campaign.Current, new object[0]);
-            if (buildingTypes is null)
-                return false;
-            foreach (BuildingType _buildingType in buildingTypes)
-                if (_buildingType?.Name?.ToString() == name)
-                {
-                    buildingType = _buildingType;
-                    buildingTypesCache[name] = buildingType;
-                    return true;
-                }
-            buildingTypesCache[name] = null;
+            if (!(Campaign.Current is null) && !((buildingTypes = BuildingType.All) is null))
+                foreach (BuildingType _buildingType in buildingTypes)
+                    if (_buildingType?.Name?.ToString() == name)
+                    {
+                        buildingType = _buildingType;
+                        buildingTypesCache[name] = buildingType;
+                        return true;
+                    }
             return false;
         }
 
-        private static MBReadOnlyList<ItemCategory> itemCategories = null;
+        private static MBReadOnlyList<ItemCategory> itemCategories;
         private static readonly Dictionary<string, ItemCategory> itemCategoryCache = new Dictionary<string, ItemCategory>();
         private static bool TryGetItemCategoryFromName(string name, out ItemCategory itemCategory)
         {
             if (itemCategoryCache.TryGetValue(name, out itemCategory))
                 return !(itemCategory is null);
-            if (itemCategories is null) itemCategories = (MBReadOnlyList<ItemCategory>)typeof(Campaign)?
-                    .GetProperty("AllItemCategories", (BindingFlags)(-1))?.GetMethod?.Invoke(Campaign.Current, new object[0]);
-            if (itemCategories is null)
-                return false;
-            foreach (ItemCategory _itemCategory in itemCategories)
-                if (_itemCategory?.GetName()?.ToString() == name)
-                {
-                    itemCategory = _itemCategory;
-                    itemCategoryCache[name] = itemCategory;
-                    return true;
-                }
-            itemCategoryCache[name] = null;
+            if (!(Campaign.Current is null) && !((itemCategories = ItemCategories.All) is null))
+                foreach (ItemCategory _itemCategory in itemCategories)
+                    if (_itemCategory?.GetName()?.ToString() == name)
+                    {
+                        itemCategory = _itemCategory;
+                        itemCategoryCache[name] = itemCategory;
+                        return true;
+                    }
             return false;
         }
     }
