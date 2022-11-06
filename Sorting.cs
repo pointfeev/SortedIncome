@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Extensions;
@@ -17,7 +18,23 @@ namespace SortedIncome
 {
     internal static class Sorting
     {
-        internal static void GetTooltipForAccumulatingProperty(string propertyName, float currentValue, ExplainedNumber explainedNumber, ref List<TooltipProperty> __result)
+        private static Func<List<TooltipProperty>> CurrentTooltipFunc;
+        internal static void BeginTooltip(Func<List<TooltipProperty>> ____tooltipProperties)
+        {
+            if (!(____tooltipProperties is null))
+                CurrentTooltipFunc = ____tooltipProperties;
+        }
+
+        private static bool LeftAltDown = InputKey.LeftAlt.IsDown();
+        internal static void TickTooltip()
+        {
+            bool leftAltDown = InputKey.LeftAlt.IsDown();
+            if (LeftAltDown != leftAltDown && !(CurrentTooltipFunc is null))
+                InformationManager.ShowTooltip(typeof(List<TooltipProperty>), CurrentTooltipFunc());
+            LeftAltDown = leftAltDown;
+        }
+
+        internal static void GetTooltip(ref List<TooltipProperty> __result)
         {
             if (InputKey.LeftAlt.IsDown()) return;
             SortTooltip(__result);
