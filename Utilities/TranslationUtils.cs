@@ -1,60 +1,79 @@
 ﻿using TaleWorlds.Localization;
 
-namespace SortedIncome
+namespace SortedIncome.Utilities
 {
     internal static class TranslationUtils
     {
-        internal const string ModPrefix = "si_";
+        private const string ModPrefix = "si_";
 
-        internal static string GetDynamicTranslationID(this string s) => ModPrefix
-            + s.ToLower().Trim().Replace(" ", "_")
-            .Replace("&", "and").Replace("'", "")
-            .Replace("(", "LP").Replace(")", "RP")
-            .Replace("[", "LB").Replace("]", "RB")
-            .Replace("{", "LSB").Replace("}", "RSB");
+        private static string GetDynamicTranslationId(this string s) => ModPrefix
+                                                                      + s.ToLower().Trim().Replace(" ", "_")
+                                                                         .Replace("&", "and").Replace("'", "")
+                                                                         .Replace("(", "LP").Replace(")", "RP")
+                                                                         .Replace("[", "LB").Replace("]", "RB")
+                                                                         .Replace("{", "LSB").Replace("}", "RSB");
 
-        internal static string TranslateWithDynamicID(this string s) => new TextObject($"{{={s.GetDynamicTranslationID()}}}" + s).ToString();
+        internal static string TranslateWithDynamicId(this string s)
+            => new TextObject($"{{={s.GetDynamicTranslationId()}}}" + s).ToString();
 
-        internal static string TranslateID(this string id) => LocalizedTextManager.GetTranslatedText(MBTextManager.ActiveTextLanguage, id) ?? string.Empty;
+        private static string TranslateId(this string id)
+            => LocalizedTextManager.GetTranslatedText(MBTextManager.ActiveTextLanguage, id) ?? string.Empty;
 
         internal static bool Parse(this string name, string contains, string translationTemplate = null)
         {
-            if (name.Contains(contains)) return true;
-            else if (!(translationTemplate is null))
-            {
-                string translation = "";
-                string currentID = "";
-                bool open = false;
-                char[] chars = translationTemplate.ToCharArray();
-                foreach (char c in chars)
-                    if (c == '{')
+            if (name.Contains(contains))
+                return true;
+            if (translationTemplate is null)
+                return false;
+            string translation = "";
+            string currentId = "";
+            bool open = false;
+            char[] chars = translationTemplate.ToCharArray();
+            foreach (char c in chars)
+                switch (c)
+                {
+                    case '{':
                         open = true;
-                    else if (c == '}')
+                        break;
+                    case '}':
                     {
                         bool _open = false;
-                        char[] _chars = TranslateID(currentID).ToCharArray();
+                        char[] _chars = TranslateId(currentId).ToCharArray();
                         foreach (char _c in _chars)
-                        {
-                            if (_c == '{')
-                                _open = true;
-                            else if (_c == '}')
-                                _open = false;
-                            else if (!_open)
-                                translation += _c;
-                        }
-                        currentID = "";
+                            switch (_c)
+                            {
+                                case '{':
+                                    _open = true;
+                                    break;
+                                case '}':
+                                    _open = false;
+                                    break;
+                                default:
+                                {
+                                    if (!_open)
+                                        translation += _c;
+                                    break;
+                                }
+                            }
+                        currentId = "";
                         open = false;
+                        break;
                     }
-                    else if (open)
-                        currentID += c;
-                    else
-                        translation += c;
-                if (string.IsNullOrWhiteSpace(translation)) return false;
-                if (translation[translation.Length - 1] == ')') translation = translation.Substring(0, translation.Length - 1);
-                //InformationManager.DisplayMessage(new InformationMessage("'" + translationTemplate + "' => '" + translation + "'", Colors.Yellow, "SortedIncome"));
-                return name.Contains(translation);
-            }
-            return false;
+                    default:
+                    {
+                        if (open)
+                            currentId += c;
+                        else
+                            translation += c;
+                        break;
+                    }
+                }
+            if (string.IsNullOrWhiteSpace(translation))
+                return false;
+            if (translation[translation.Length - 1] == ')')
+                translation = translation.Substring(0, translation.Length - 1);
+            //InformationManager.DisplayMessage(new InformationMessage("'" + translationTemplate + "' => '" + translation + "'", Colors.Yellow, "SortedIncome"));
+            return name.Contains(translation);
         }
     }
 }
