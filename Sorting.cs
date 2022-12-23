@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using SortedIncome.Utilities;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Extensions;
@@ -17,15 +18,12 @@ namespace SortedIncome
 {
     internal static class Sorting
     {
-        private static Func<List<TooltipProperty>> currentTooltipFunc;
-
-        private static bool leftAltDown = InputKey.LeftAlt.IsDown();
-
         private static readonly Dictionary<string, (string prefix, (string singular, string plural) suffix)> Strings
             = new Dictionary<string, (string prefix, (string singular, string plural) suffix)>();
 
-        private static readonly Dictionary<string, (float number, int mentions, int textHeight)> Lines
-            = new Dictionary<string, (float number, int mentions, int textHeight)>();
+        private static readonly
+            Dictionary<string, (float number, Dictionary<string, int> variationMentions, int textHeight)> Lines
+                = new Dictionary<string, (float number, Dictionary<string, int> variationMentions, int textHeight)>();
 
         private static MBReadOnlyList<Settlement> settlements;
         private static readonly Dictionary<string, Settlement> SettlementCache = new Dictionary<string, Settlement>();
@@ -45,27 +43,72 @@ namespace SortedIncome
         private static readonly Dictionary<string, ItemCategory> ItemCategoryCache
             = new Dictionary<string, ItemCategory>();
 
+        internal static MethodInfo AddLine;
+        internal static FieldInfo Value;
+        internal static readonly Dictionary<string, string> TextObjectStrs = new Dictionary<string, string>();
+
+        private static Func<List<TooltipProperty>> currentTooltipFunc;
+
+        private static object explainer;
+        private static TextObject descriptionObj;
+        private static TextObject variableObj;
+
+        private static bool wasLeftAltDown = LeftAltDown;
+
+        private static bool CanSort => AddLine != null && Value != null;
+        private static bool LeftAltDown => InputKey.LeftAlt.IsDown();
+
+        internal static bool ExplainedNumberPrefix(object ____explainer, ref TextObject description,
+                                                   TextObject variable)
+        {
+            if (____explainer == null || description == null || variable == null || !CanSort || LeftAltDown)
+                return true;
+            explainer = ____explainer;
+            descriptionObj = description;
+            variableObj = variable;
+            description = null;
+            return true;
+        }
+
+        internal static void ExplainedNumberPostfix(float value)
+        {
+            if (explainer == null || descriptionObj == null || variableObj == null || !CanSort || LeftAltDown)
+                return;
+            string description = (string)Value.GetValue(descriptionObj);
+            string variableValue = (string)Value.GetValue(variableObj);
+            if (variableObj != null)
+                description += ";;;" + variableValue
+                                     + (variableObj.ToString() != variableValue ? ":::" + variableObj : "");
+            _ = AddLine.Invoke(explainer, new object[] { description, value, 1 });
+            descriptionObj = null;
+            variableObj = null;
+        }
+
         internal static void BeginTooltip(Func<List<TooltipProperty>> ____tooltipProperties)
-            => currentTooltipFunc = ____tooltipProperties;
+        {
+            if (!CanSort) return;
+            currentTooltipFunc = ____tooltipProperties;
+        }
 
         internal static void ShowTooltip(Type type)
         {
+            if (!CanSort) return;
             if (type != typeof(List<TooltipProperty>))
                 currentTooltipFunc = null;
         }
 
         internal static void TickTooltip(PropertyBasedTooltipVM __instance)
         {
-            if (!__instance.IsActive) return;
-            bool leftAltDown = InputKey.LeftAlt.IsDown();
-            if (Sorting.leftAltDown != leftAltDown && !(currentTooltipFunc is null))
+            if (!__instance.IsActive || !CanSort) return;
+            bool leftAltDown = LeftAltDown;
+            if (wasLeftAltDown != leftAltDown && !(currentTooltipFunc is null))
                 InformationManager.ShowTooltip(typeof(List<TooltipProperty>), currentTooltipFunc());
-            Sorting.leftAltDown = leftAltDown;
+            wasLeftAltDown = leftAltDown;
         }
 
         internal static void GetTooltip(ref List<TooltipProperty> __result)
         {
-            if (InputKey.LeftAlt.IsDown()) return;
+            if (!CanSort || LeftAltDown) return;
             SortTooltip(__result);
         }
 
@@ -82,98 +125,132 @@ namespace SortedIncome
                     if (property.PropertyModifier == (int)TooltipPropertyFlags.None)
                     {
                         if (start == -1) start = i;
-                        bool incrementMentions = true;
-                        string name = property.DefinitionLabel;
-                        if (TryGetSettlementFromName(name, out Settlement settlement)
-                         && settlement.IsVillage) // denars, food
+                        string description = property.DefinitionLabel;
+                        //string debug = description;
+                        if (description.Length < 1)
+                            continue;
+                        string variableValue = null, variable = null;
+                        int varValStart = description.IndexOf(";;;", StringComparison.Ordinal);
+                        if (varValStart != -1)
                         {
-                            name = GetStrings("Village tax", "from", ("village", "villages"));
+                            variableValue = description.Substring(varValStart + 3);
+                            description = description.Substring(0, varValStart);
+                            if (description.Length < 1)
+                                continue;
+                            int varStart = variableValue.IndexOf(":::", StringComparison.Ordinal);
+                            if (varStart != -1)
+                            {
+                                variable = variableValue.Substring(varStart + 3);
+                                variableValue = variableValue.Substring(0, varStart);
+                            }
                         }
-                        else if (!(settlement is null) && settlement.IsCastle) // denars
+                        string variation = description;
+                        if (description == TextObjectStrs["partyIncome"]
+                         || description == TextObjectStrs["partyExpenses"])
                         {
-                            name = GetStrings("Castle tax", "from", ("castle", "castles"));
+                            // denars
+                            description = variableValue
+                                       == (string)Value.GetValue(GameTexts.FindText("str_garrison_party_name"))
+                                ? SetupStrings("Garrison expenses", "for", ("garrison", "garrisons"))
+                                : SetupStrings("Party balance", "from", ("party", "parties"));
                         }
-                        else if (name.Parse("'s tariff", "{wVMPdc8J}")
-                              || (!(settlement is null) && settlement.IsTown)) // denars
+                        else if (description == TextObjectStrs["caravanIncome"])
                         {
-                            if (settlement is null || !settlement.IsTown) incrementMentions = false;
-                            name = GetStrings("Town tax & tariffs", "from", ("town", "towns"));
+                            // denars
+                            description = SetupStrings("Caravan balance", "from", ("caravan", "caravans"));
                         }
-                        else if
-                            (TryGetKingdomPolicyFromName(
-                                name, out _)) // denars, militia, food, loyalty, security, prosperity, settlement tax
+                        else if (description == TextObjectStrs["tributeIncome"])
                         {
-                            name = GetStrings("Kingdom policies", "from", ("policy", "policies"));
+                            // denars
+                            description = SetupStrings("Tribute", "from", ("kingdom", "kingdoms"));
                         }
-                        else if (TryGetBuildingTypeFromName(name, out BuildingType buildingType)
+                        else if ((TryGetSettlementFromName(description, out Settlement settlement)
+                               && settlement.IsVillage)
+                              || description == TextObjectStrs["villageIncome"])
+                        {
+                            // denars, food
+                            description = SetupStrings("Village tax", "from", ("village", "villages"));
+                        }
+                        else if ((settlement != null && settlement.IsTown)
+                              || description == TextObjectStrs["townTax"]
+                              || description == TextObjectStrs["townTradeTax"]
+                              || description == TextObjectStrs["tariffTax"])
+                        {
+                            // denars
+                            description = SetupStrings("Town tax & tariffs", "from", ("town", "towns"));
+                        }
+                        else if (settlement != null && settlement.IsCastle)
+                        {
+                            // denars
+                            description = SetupStrings("Castle tax", "from", ("castle", "castles"));
+                        }
+                        else if (TryGetKingdomPolicyFromName(description, out _))
+                        {
+                            // denars, militia, food, loyalty, security, prosperity, settlement tax
+                            description = SetupStrings("Kingdom policies", "from", ("policy", "policies"));
+                        }
+                        else if (TryGetBuildingTypeFromName(description, out BuildingType buildingType)
                               && buildingType.GetBaseBuildingEffectAmount(
-                                     BuildingEffectEnum.FoodProduction, buildingType.StartLevel) > 0) // food
+                                     BuildingEffectEnum.FoodProduction, buildingType.StartLevel) > 0)
                         {
-                            name = GetStrings("Building production", "from", ("building", "buildings"));
+                            // food
+                            description = SetupStrings("Building production", "from", ("building", "buildings"));
                         }
-                        else if (TryGetItemCategoryFromName(name, out ItemCategory itemCategory)
-                              && itemCategory.Properties == ItemCategory.Property.BonusToFoodStores) // food
+                        else if (TryGetItemCategoryFromName(description, out ItemCategory itemCategory)
+                              && itemCategory.Properties == ItemCategory.Property.BonusToFoodStores)
                         {
-                            name = GetStrings("Sold food goods", "from", ("good", "goods"));
-                        }
-                        else if (name.Parse("Party expenses ", "{dZDFxUvU}")
-                              && name.Parse("Garrison of ", "{frt7AmX0}")) // denars
-                        {
-                            name = GetStrings("Garrison expenses", "for", ("garrison", "garrisons"));
-                        }
-                        else if (!name.Parse("Main party wages", "{YkZKXsIn}")
-                              && name.Parse("Party expenses ", "{dZDFxUvU}")) // denars
-                        {
-                            name = GetStrings("Party expenses", "for", ("party", "parties"));
-                        }
-                        else if (name.Parse("Caravan (", "{c2pdihCB}")) // denars
-                        {
-                            name = GetStrings("Caravan balance", "from", ("caravan", "caravans"));
-                        }
-                        else if (name.Parse("Tribute from ", "{rhfgzKtA}")) // denars
-                        {
-                            name = GetStrings("Tribute", "from", ("kingdom", "kingdoms"));
+                            // food
+                            description = SetupStrings("Sold food goods", "from", ("good", "goods"));
                         }
                         // Improved Garrisons support
-                        else if (name.Parse("Improved Garrison Training of ",
-                                            "{misc_costmodel_trainingcosts}")) // denars
+                        else if (description.StartsWith("{=misc_costmodel_trainingcosts}")
+                              || description.StartsWith("Improved Garrison Training of "))
                         {
-                            name = GetStrings("Garrison training", "for", ("garrison", "garrisons"));
+                            // denars
+                            description = SetupStrings("Garrison training", "for", ("garrison", "garrisons"));
                         }
-                        else if (name.Parse("Improved Garrison Recruitment of ",
-                                            "{misc_costmodel_recruitmentcosts}")) // denars
+                        else if (description.StartsWith("{=misc_costmodel_recruitmentcosts}")
+                              || description.StartsWith("Improved Garrison Recruitment of "))
                         {
-                            name = GetStrings("Garrison recruitment", "for", ("garrison", "garrisons"));
+                            // denars
+                            description = SetupStrings("Garrison recruitment", "for", ("garrison", "garrisons"));
                         }
-                        else if (name.Parse(" Guard wages", "{misc_guardwages}")) // denars
+                        else if (description.StartsWith("{=misc_guardwages}") || description.EndsWith(" Guard wages"))
                         {
-                            name = GetStrings("Garrison guard wages", "for", ("garrison guard", "garrison guards"));
+                            // denars
+                            description = SetupStrings("Garrison guard wages", "for",
+                                                       ("garrison guard", "garrison guards"));
                         }
-                        else if (name.Parse(" finance help", "{rhKxsdtz}")) // denars
+                        else if (description.StartsWith("{=rhKxsdtz}") || description.EndsWith(" finance help"))
                         {
-                            name = GetStrings("Garrison financial help", "for", ("garrison", "garrisons"));
+                            // denars
+                            description = SetupStrings("Garrison financial help", "for", ("garrison", "garrisons"));
                         }
-                        // Populations of Calradia and Banner Kings support
-                        else if (name.Parse("Excess noble population at ")) // influence
+                        else
                         {
-                            name = GetStrings("Excess noble population", "at", ("settlement", "settlements"));
-                        }
-                        else if (name.Parse("Nobles influence from ")) // influence
-                        {
-                            name = GetStrings("Nobles influence", "from", ("settlement", "settlements"));
-                        }
-                        else if (name.Parse("Population growth policy at ")) // influence
-                        {
-                            name = GetStrings("Population growth policies", "at", ("settlement", "settlements"));
+                            TextObject nameObj = new TextObject(description);
+                            if (variable != null || variableValue != null)
+                                nameObj.SetTextVariable("A0", variable ?? variableValue);
+                            //description = debug + "===" + nameObj;
+                            description = nameObj.ToString();
                         }
                         string value = property.ValueLabel;
                         if (!float.TryParse(value, out float number))
                             number = float.NaN;
-                        int increment = incrementMentions ? 1 : 0;
                         int textHeight = property.TextHeight;
-                        Lines[name] = Lines.TryGetValue(name, out (float number, int mentions, int textHeight) line)
-                            ? (line.number + number, line.mentions + increment, Math.Max(line.textHeight, textHeight))
-                            : (number, increment, textHeight);
+                        if (Lines.TryGetValue(description,
+                                              out (float number, Dictionary<string, int> variationMentions, int
+                                              textHeight) line))
+                        {
+                            line.variationMentions.TryGetValue(variation, out int mentions);
+                            line.variationMentions[variation] = mentions + 1;
+                            Lines[description] = (
+                                line.number + number, line.variationMentions, Math.Max(line.textHeight, textHeight));
+                        }
+                        else
+                        {
+                            Lines[description] = (number, new Dictionary<string, int> { [variation] = 1 }, textHeight);
+                        }
                     }
                     else if (start != -1 && end == -1)
                     {
@@ -183,7 +260,8 @@ namespace SortedIncome
                 if (start == -1 || end == -1) return;
                 for (int i = end; i >= start; i--)
                     properties.RemoveAt(i);
-                foreach (KeyValuePair<string, (float number, int mentions, int textHeight)> line in Lines)
+                foreach (KeyValuePair<string, (float number, Dictionary<string, int> variationMentions, int textHeight)>
+                             line in Lines)
                 {
                     string value = line.Value.number.ToString("0.##");
                     if (line.Value.number > 0.001f)
@@ -192,8 +270,10 @@ namespace SortedIncome
                         value = GameTexts.FindText("str_plus_with_number").ToString();
                     }
                     properties.Insert(start++,
-                                      new TooltipProperty(GetFinalName(line.Key, line.Value.mentions), value,
-                                                          line.Value.textHeight));
+                                      new TooltipProperty(
+                                          GetFinalDescription(line.Key, line.Value.variationMentions.Max(v => v.Value)),
+                                          value,
+                                          line.Value.textHeight));
                 }
             }
             catch (Exception e)
@@ -202,7 +282,8 @@ namespace SortedIncome
             }
         }
 
-        private static string GetStrings(string name, string countPrefix, (string singular, string plural) countSuffix)
+        private static string SetupStrings(string name, string countPrefix,
+                                           (string singular, string plural) countSuffix)
         {
             name = name.TranslateWithDynamicId();
             countPrefix = countPrefix.TranslateWithDynamicId();
@@ -212,7 +293,7 @@ namespace SortedIncome
             return name;
         }
 
-        private static string GetFinalName(string name, int mentions) =>
+        private static string GetFinalDescription(string name, int mentions) =>
             !Strings.TryGetValue(name, out (string prefix, (string singular, string plural) suffix) strings)
                 ? name
                 : name
@@ -224,9 +305,9 @@ namespace SortedIncome
                 return !(settlement is null);
             if (Campaign.Current is null || (settlements = Settlement.All) is null)
                 return false;
-            foreach (Settlement _settlement in settlements.Where(_settlement => _settlement?.Name?.ToString() == name))
+            foreach (Settlement s in settlements.Where(s => s?.Name?.ToString() == name))
             {
-                settlement = _settlement;
+                settlement = s;
                 SettlementCache[name] = settlement;
                 return true;
             }
@@ -239,10 +320,9 @@ namespace SortedIncome
                 return !(policyObject is null);
             if (Campaign.Current is null || (policyObjects = PolicyObject.All) is null)
                 return false;
-            foreach (PolicyObject _policyObject in policyObjects.Where(_policyObject
-                                                                           => _policyObject?.Name?.ToString() == name))
+            foreach (PolicyObject p in policyObjects.Where(p => p?.Name?.ToString() == name))
             {
-                policyObject = _policyObject;
+                policyObject = p;
                 PolicyObjectCache[name] = policyObject;
                 return true;
             }
@@ -255,10 +335,9 @@ namespace SortedIncome
                 return !(buildingType is null);
             if (Campaign.Current is null || (buildingTypes = BuildingType.All) is null)
                 return false;
-            foreach (BuildingType _buildingType in buildingTypes.Where(_buildingType
-                                                                           => _buildingType?.Name?.ToString() == name))
+            foreach (BuildingType t in buildingTypes.Where(t => t?.Name?.ToString() == name))
             {
-                buildingType = _buildingType;
+                buildingType = t;
                 BuildingTypesCache[name] = buildingType;
                 return true;
             }
@@ -271,10 +350,9 @@ namespace SortedIncome
                 return !(itemCategory is null);
             if (Campaign.Current is null || (itemCategories = ItemCategories.All) is null)
                 return false;
-            foreach (ItemCategory _itemCategory in itemCategories.Where(
-                         _itemCategory => _itemCategory?.GetName()?.ToString() == name))
+            foreach (ItemCategory c in itemCategories.Where(c => c?.GetName()?.ToString() == name))
             {
-                itemCategory = _itemCategory;
+                itemCategory = c;
                 ItemCategoryCache[name] = itemCategory;
                 return true;
             }
