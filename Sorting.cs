@@ -146,18 +146,18 @@ namespace SortedIncome
                         }
                         string variation = description;
                         if (description == TextObjectStrs["partyIncome"]
-                         || description == TextObjectStrs["partyExpenses"])
+                         || description == TextObjectStrs["partyExpenses"]
+                         || description == TextObjectStrs["caravanIncome"])
                         {
                             // denars
-                            description = variableValue
-                                       == (string)Value.GetValue(GameTexts.FindText("str_garrison_party_name"))
-                                ? SetupStrings("Garrison expenses", "for", ("garrison", "garrisons"))
-                                : SetupStrings("Party balance", "from", ("party", "parties"));
-                        }
-                        else if (description == TextObjectStrs["caravanIncome"])
-                        {
-                            // denars
-                            description = SetupStrings("Caravan balance", "from", ("caravan", "caravans"));
+                            if (description == TextObjectStrs["caravanIncome"] || variableValue
+                             == (string)Value.GetValue(GameTexts.FindText("str_caravan_party_name")))
+                                description = SetupStrings("Caravan balance", "from", ("caravan", "caravans"));
+                            else if (variableValue
+                                  == (string)Value.GetValue(GameTexts.FindText("str_garrison_party_name")))
+                                description = SetupStrings("Garrison expenses", "for", ("garrison", "garrisons"));
+                            else
+                                description = SetupStrings("Party balance", "from", ("party", "parties"));
                         }
                         else if (description == TextObjectStrs["tributeIncome"])
                         {
