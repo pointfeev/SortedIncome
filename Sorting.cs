@@ -74,12 +74,22 @@ namespace SortedIncome
         {
             if (explainer == null || descriptionObj == null || variableObj == null || !CanSort || LeftAltDown)
                 return;
-            string description = (string)Value.GetValue(descriptionObj);
-            string variableValue = (string)Value.GetValue(variableObj);
-            if (variableObj != null)
-                description += ";;;" + variableValue
-                                     + (variableObj.ToString() != variableValue ? ":::" + variableObj : "");
-            _ = AddLine.Invoke(explainer, new object[] { description, value, 1 });
+            try
+            {
+                string description = Value.GetValue(descriptionObj) as string;
+                if (description != null && variableObj != null && Value.GetValue(variableObj) is string variableValue)
+                    description += ";;;" + variableValue
+                                         + (variableObj.ToString() != variableValue ? ":::" + variableObj : "");
+                _ = AddLine.Invoke(explainer,
+                                   new object[]
+                                   {
+                                       description?.Length > 0 ? description : descriptionObj.ToString(), value, 1
+                                   });
+            }
+            catch
+            {
+                // ignore
+            }
             descriptionObj = null;
             variableObj = null;
         }
@@ -99,11 +109,20 @@ namespace SortedIncome
 
         internal static void TickTooltip(PropertyBasedTooltipVM __instance)
         {
-            if (!__instance.IsActive || !CanSort) return;
             bool leftAltDown = LeftAltDown;
-            if (wasLeftAltDown != leftAltDown && !(currentTooltipFunc is null))
-                InformationManager.ShowTooltip(typeof(List<TooltipProperty>), currentTooltipFunc());
+            if (wasLeftAltDown == leftAltDown)
+                return;
             wasLeftAltDown = leftAltDown;
+            if (currentTooltipFunc == null || __instance == null || !__instance.IsActive || !CanSort)
+                return;
+            try
+            {
+                InformationManager.ShowTooltip(typeof(List<TooltipProperty>), currentTooltipFunc());
+            }
+            catch
+            {
+                // ignore
+            }
         }
 
         internal static void GetTooltip(ref List<TooltipProperty> __result)
