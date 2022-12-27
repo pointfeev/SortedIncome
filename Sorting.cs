@@ -49,7 +49,7 @@ namespace SortedIncome
 
         private static Func<List<TooltipProperty>> currentTooltipFunc;
 
-        private static object explainer;
+        private static Action<string, float, int> addLine;
         private static TextObject descriptionObj;
         private static TextObject variableObj;
 
@@ -63,16 +63,26 @@ namespace SortedIncome
         {
             if (____explainer == null || description == null || variable == null || !CanSort || LeftAltDown)
                 return true;
-            explainer = ____explainer;
+            try
+            {
+                if (!(AddLine.CreateDelegate(typeof(Action<string, float, int>), ____explainer) is
+                        Action<string, float, int> action))
+                    return true;
+                addLine = action;
+            }
+            catch
+            {
+                return true;
+            }
             descriptionObj = description;
             variableObj = variable;
-            description = null;
+            description = null; // prevent original AddLine from being called
             return true;
         }
 
         internal static void ExplainedNumberPostfix(float value)
         {
-            if (explainer == null || descriptionObj == null || variableObj == null || !CanSort || LeftAltDown)
+            if (addLine == null || descriptionObj == null || variableObj == null || !CanSort || LeftAltDown)
                 return;
             try
             {
@@ -80,11 +90,7 @@ namespace SortedIncome
                 if (description != null && variableObj != null && Value.GetValue(variableObj) is string variableValue)
                     description += ";;;" + variableValue
                                          + (variableObj.ToString() != variableValue ? ":::" + variableObj : "");
-                _ = AddLine.Invoke(explainer,
-                                   new object[]
-                                   {
-                                       description?.Length > 0 ? description : descriptionObj.ToString(), value, 1
-                                   });
+                addLine(description?.Length > 0 ? description : descriptionObj.ToString(), value, 1);
             }
             catch
             {
