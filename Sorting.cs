@@ -21,27 +21,23 @@ namespace SortedIncome
         private static readonly Dictionary<string, (string prefix, (string singular, string plural) suffix)> Strings
             = new Dictionary<string, (string prefix, (string singular, string plural) suffix)>();
 
-        private static readonly
-            Dictionary<string, (float number, Dictionary<string, int> variationMentions, int textHeight)> Lines
-                = new Dictionary<string, (float number, Dictionary<string, int> variationMentions, int textHeight)>();
+        private static readonly Dictionary<string, (float number, Dictionary<object, int> variationMentions, int textHeight)> Lines
+            = new Dictionary<string, (float number, Dictionary<object, int> variationMentions, int textHeight)>();
 
         private static MBReadOnlyList<Settlement> settlements;
         private static readonly Dictionary<string, Settlement> SettlementCache = new Dictionary<string, Settlement>();
 
         private static MBReadOnlyList<PolicyObject> policyObjects;
 
-        private static readonly Dictionary<string, PolicyObject> PolicyObjectCache
-            = new Dictionary<string, PolicyObject>();
+        private static readonly Dictionary<string, PolicyObject> PolicyObjectCache = new Dictionary<string, PolicyObject>();
 
         private static MBReadOnlyList<BuildingType> buildingTypes;
 
-        private static readonly Dictionary<string, BuildingType> BuildingTypesCache
-            = new Dictionary<string, BuildingType>();
+        private static readonly Dictionary<string, BuildingType> BuildingTypesCache = new Dictionary<string, BuildingType>();
 
         private static MBReadOnlyList<ItemCategory> itemCategories;
 
-        private static readonly Dictionary<string, ItemCategory> ItemCategoryCache
-            = new Dictionary<string, ItemCategory>();
+        private static readonly Dictionary<string, ItemCategory> ItemCategoryCache = new Dictionary<string, ItemCategory>();
 
         internal static MethodInfo AddLine;
         internal static FieldInfo Value;
@@ -49,55 +45,36 @@ namespace SortedIncome
 
         private static Func<List<TooltipProperty>> currentTooltipFunc;
 
-        private static Action<string, float, int> addLine;
-        private static TextObject descriptionObj;
-        private static TextObject variableObj;
-
         private static bool wasLeftAltDown = LeftAltDown;
 
-        private static bool CanSort => AddLine != null && Value != null;
+        private static bool CanSort => AddLine != null && Value != null && TextObjectStrs.Count > 0;
         private static bool LeftAltDown => InputKey.LeftAlt.IsDown();
 
-        internal static bool ExplainedNumberPrefix(object ____explainer, ref TextObject description,
-                                                   TextObject variable)
+        internal static bool AddTooltip(object ____explainer, float value, ref TextObject description, TextObject variable)
         {
-            if (____explainer == null || description == null || variable == null || !CanSort || LeftAltDown)
+            if (____explainer == null || description == null || variable == null || value.ApproximatelyEqualsTo(0f) || !CanSort || LeftAltDown)
                 return true;
+            string descriptionValue;
             try
             {
-                if (!(AddLine.CreateDelegate(typeof(Action<string, float, int>), ____explainer) is
-                        Action<string, float, int> action))
-                    return true;
-                addLine = action;
+                descriptionValue = Value.GetValue(description) as string;
+                if (descriptionValue != null && Value.GetValue(variable) is string variableValue)
+                    descriptionValue += ";;;" + variableValue + (variable.ToString() != variableValue ? ":::" + variable : "");
             }
             catch
             {
                 return true;
             }
-            descriptionObj = description;
-            variableObj = variable;
+            try
+            {
+                AddLine.Invoke(____explainer, new object[] { descriptionValue?.Length > 0 ? descriptionValue : description.ToString(), value, 1 });
+            }
+            catch
+            {
+                return true;
+            }
             description = null; // prevent original AddLine from being called
             return true;
-        }
-
-        internal static void ExplainedNumberPostfix(float value)
-        {
-            if (addLine == null || descriptionObj == null || variableObj == null || !CanSort || LeftAltDown)
-                return;
-            try
-            {
-                string description = Value.GetValue(descriptionObj) as string;
-                if (description != null && variableObj != null && Value.GetValue(variableObj) is string variableValue)
-                    description += ";;;" + variableValue
-                                         + (variableObj.ToString() != variableValue ? ":::" + variableObj : "");
-                addLine(description?.Length > 0 ? description : descriptionObj.ToString(), value, 1);
-            }
-            catch
-            {
-                // ignore
-            }
-            descriptionObj = null;
-            variableObj = null;
         }
 
         internal static void BeginTooltip(Func<List<TooltipProperty>> ____tooltipProperties)
@@ -169,90 +146,88 @@ namespace SortedIncome
                                 variableValue = variableValue.Substring(0, varStart);
                             }
                         }
-                        string variation = description;
-                        if (description == TextObjectStrs["partyIncome"]
-                         || description == TextObjectStrs["partyExpenses"]
-                         || description == TextObjectStrs["caravanIncome"])
+                        object variation = description;
+                        if (description == TextObjectStrs["partyIncome"] || description == TextObjectStrs["partyExpenses"]
+                                                                         || description == TextObjectStrs["caravanIncome"]) // denars
                         {
-                            // denars
                             if (description == TextObjectStrs["caravanIncome"] || variableValue
                              == (string)Value.GetValue(GameTexts.FindText("str_caravan_party_name")))
+                            {
                                 description = SetupStrings("Caravan balance", "from", ("caravan", "caravans"));
-                            else if (variableValue
-                                  == (string)Value.GetValue(GameTexts.FindText("str_garrison_party_name")))
+                            }
+                            else if (variableValue == (string)Value.GetValue(GameTexts.FindText("str_garrison_party_name")))
+                            {
                                 description = SetupStrings("Garrison expenses", "for", ("garrison", "garrisons"));
+                            }
                             else
+                            {
+                                variation = false;
                                 description = SetupStrings("Party balance", "from", ("party", "parties"));
+                            }
                         }
-                        else if (description == TextObjectStrs["tributeIncome"])
+                        else if (description == TextObjectStrs["tributeIncome"]) // denars
                         {
-                            // denars
                             description = SetupStrings("Tribute", "from", ("kingdom", "kingdoms"));
                         }
-                        else if ((TryGetSettlementFromName(description, out Settlement settlement)
-                               && settlement.IsVillage)
-                              || description == TextObjectStrs["villageIncome"])
+                        else if ((TryGetSettlementFromName(description, out Settlement settlement) && settlement.IsVillage)
+                              || description == TextObjectStrs["villageIncome"]) // denars, food
                         {
-                            // denars, food
+                            if (settlement != null)
+                                variation = false;
                             description = SetupStrings("Village tax", "from", ("village", "villages"));
                         }
-                        else if ((settlement != null && settlement.IsTown)
-                              || description == TextObjectStrs["townTax"]
-                              || description == TextObjectStrs["townTradeTax"]
-                              || description == TextObjectStrs["tariffTax"])
+                        else if ((settlement != null && settlement.IsTown) || description == TextObjectStrs["townTax"]
+                                                                           || description == TextObjectStrs["townTradeTax"]
+                                                                           || description == TextObjectStrs["tariffTax"]) // denars
                         {
-                            // denars
+                            if (settlement != null)
+                                variation = false;
                             description = SetupStrings("Town tax & tariffs", "from", ("town", "towns"));
                         }
-                        else if (settlement != null && settlement.IsCastle)
+                        else if (settlement != null && settlement.IsCastle) // denars
                         {
-                            // denars
+                            variation = false;
                             description = SetupStrings("Castle tax", "from", ("castle", "castles"));
                         }
-                        else if (TryGetKingdomPolicyFromName(description, out _))
+                        else if (TryGetKingdomPolicyFromName(description, out _)) // denars, militia, food, loyalty, security, prosperity, settlement tax
                         {
-                            // denars, militia, food, loyalty, security, prosperity, settlement tax
+                            variation = false;
                             description = SetupStrings("Kingdom policies", "from", ("policy", "policies"));
                         }
                         else if (TryGetBuildingTypeFromName(description, out BuildingType buildingType)
-                              && buildingType.GetBaseBuildingEffectAmount(
-                                     BuildingEffectEnum.FoodProduction, buildingType.StartLevel) > 0)
+                              && buildingType.GetBaseBuildingEffectAmount(BuildingEffectEnum.FoodProduction, buildingType.StartLevel) > 0) // food
                         {
-                            // food
+                            variation = false;
                             description = SetupStrings("Building production", "from", ("building", "buildings"));
                         }
                         else if (TryGetItemCategoryFromName(description, out ItemCategory itemCategory)
-                              && itemCategory.Properties == ItemCategory.Property.BonusToFoodStores)
+                              && itemCategory.Properties == ItemCategory.Property.BonusToFoodStores) // food
                         {
-                            // food
+                            variation = false;
                             description = SetupStrings("Sold food goods", "from", ("good", "goods"));
                         }
                         // Improved Garrisons support
                         else if (description.StartsWith("{=misc_costmodel_trainingcosts}")
-                              || description.StartsWith("Improved Garrison Training of "))
+                              || description.StartsWith("Improved Garrison Training of ")) // denars
                         {
-                            // denars
                             description = SetupStrings("Garrison training", "for", ("garrison", "garrisons"));
                         }
                         else if (description.StartsWith("{=misc_costmodel_recruitmentcosts}")
-                              || description.StartsWith("Improved Garrison Recruitment of "))
+                              || description.StartsWith("Improved Garrison Recruitment of ")) // denars
                         {
-                            // denars
                             description = SetupStrings("Garrison recruitment", "for", ("garrison", "garrisons"));
                         }
-                        else if (description.StartsWith("{=misc_guardwages}") || description.EndsWith(" Guard wages"))
+                        else if (description.StartsWith("{=misc_guardwages}") || description.EndsWith(" Guard wages")) // denars
                         {
-                            // denars
-                            description = SetupStrings("Garrison guard wages", "for",
-                                                       ("garrison guard", "garrison guards"));
+                            description = SetupStrings("Garrison guard wages", "for", ("garrison guard", "garrison guards"));
                         }
-                        else if (description.StartsWith("{=rhKxsdtz}") || description.EndsWith(" finance help"))
+                        else if (description.StartsWith("{=rhKxsdtz}") || description.EndsWith(" finance help")) // denars
                         {
-                            // denars
                             description = SetupStrings("Garrison financial help", "for", ("garrison", "garrisons"));
                         }
                         else
                         {
+                            variation = false;
                             TextObject nameObj = new TextObject(description);
                             if (variable != null || variableValue != null)
                                 nameObj.SetTextVariable("A0", variable ?? variableValue);
@@ -263,18 +238,15 @@ namespace SortedIncome
                         if (!float.TryParse(value, out float number))
                             number = float.NaN;
                         int textHeight = property.TextHeight;
-                        if (Lines.TryGetValue(description,
-                                              out (float number, Dictionary<string, int> variationMentions, int
-                                              textHeight) line))
+                        if (Lines.TryGetValue(description, out (float number, Dictionary<object, int> variationMentions, int textHeight) line))
                         {
                             line.variationMentions.TryGetValue(variation, out int mentions);
                             line.variationMentions[variation] = mentions + 1;
-                            Lines[description] = (
-                                line.number + number, line.variationMentions, Math.Max(line.textHeight, textHeight));
+                            Lines[description] = (line.number + number, line.variationMentions, Math.Max(line.textHeight, textHeight));
                         }
                         else
                         {
-                            Lines[description] = (number, new Dictionary<string, int> { [variation] = 1 }, textHeight);
+                            Lines[description] = (number, new Dictionary<object, int> { [variation] = 1 }, textHeight);
                         }
                     }
                     else if (start != -1 && end == -1)
@@ -285,8 +257,7 @@ namespace SortedIncome
                 if (start == -1 || end == -1) return;
                 for (int i = end; i >= start; i--)
                     properties.RemoveAt(i);
-                foreach (KeyValuePair<string, (float number, Dictionary<string, int> variationMentions, int textHeight)>
-                             line in Lines)
+                foreach (KeyValuePair<string, (float number, Dictionary<object, int> variationMentions, int textHeight)> line in Lines)
                 {
                     string value = line.Value.number.ToString("0.##");
                     if (line.Value.number > 0.001f)
@@ -295,10 +266,7 @@ namespace SortedIncome
                         value = GameTexts.FindText("str_plus_with_number").ToString();
                     }
                     properties.Insert(start++,
-                                      new TooltipProperty(
-                                          GetFinalDescription(line.Key, line.Value.variationMentions.Max(v => v.Value)),
-                                          value,
-                                          line.Value.textHeight));
+                        new TooltipProperty(GetFinalDescription(line.Key, line.Value.variationMentions.Max(v => v.Value)), value, line.Value.textHeight));
                 }
             }
             catch (Exception e)
@@ -307,8 +275,7 @@ namespace SortedIncome
             }
         }
 
-        private static string SetupStrings(string name, string countPrefix,
-                                           (string singular, string plural) countSuffix)
+        private static string SetupStrings(string name, string countPrefix, (string singular, string plural) countSuffix)
         {
             name = name.TranslateWithDynamicId();
             countPrefix = countPrefix.TranslateWithDynamicId();
@@ -318,11 +285,11 @@ namespace SortedIncome
             return name;
         }
 
-        private static string GetFinalDescription(string name, int mentions) =>
-            !Strings.TryGetValue(name, out (string prefix, (string singular, string plural) suffix) strings)
+        private static string GetFinalDescription
+            (string name, int mentions)
+            => !Strings.TryGetValue(name, out (string prefix, (string singular, string plural) suffix) strings)
                 ? name
-                : name
-                + $" ({strings.prefix} {mentions} {(mentions == 1 ? strings.suffix.singular : strings.suffix.plural)})";
+                : name + $" ({strings.prefix} {mentions} {(mentions == 1 ? strings.suffix.singular : strings.suffix.plural)})";
 
         private static bool TryGetSettlementFromName(string name, out Settlement settlement)
         {

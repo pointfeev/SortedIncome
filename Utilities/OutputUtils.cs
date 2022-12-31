@@ -30,34 +30,26 @@ namespace SortedIncome.Utilities
                         int siNum = line.LastIndexOf(@"SortedIncome\", StringComparison.Ordinal);
                         int lineNum = line.LastIndexOf(":line ", StringComparison.Ordinal);
                         if (atNum != -1)
-                            _ = output.Append(
-                                "\n    " + (inNum != -1 ? line.Substring(atNum, inNum - atNum) : line.Substring(atNum))
-                                         + (inNum != -1
-                                               ? "\n        "
-                                               + (siNum != -1
-                                                     ? "in "
-                                                     + (lineNum != -1
-                                                           ? line.Substring(siNum, lineNum - siNum)
-                                                           + "\n            on " + line.Substring(lineNum + 1)
-                                                           : line.Substring(siNum))
-                                                     : line.Substring(inNum))
-                                               : null));
+                            _ = output.Append("\n    " + (inNum != -1 ? line.Substring(atNum, inNum - atNum) : line.Substring(atNum)) + (inNum != -1
+                                ? "\n        " + (siNum != -1
+                                    ? "in " + (lineNum != -1
+                                        ? line.Substring(siNum, lineNum - siNum) + "\n            on " + line.Substring(lineNum + 1)
+                                        : line.Substring(siNum))
+                                    : line.Substring(inNum))
+                                : null));
                     }
                 }
                 e = e.InnerException;
                 stackDepth++;
             }
-            string outputString = output + "\n\n" +
-                                  "BUG REPORTING: The easiest way to report this error is to snap an image of this message box with Snipping Tool or Lightshot, "
-                                 +
-                                  "upload the image to imgur.com, and paste the link to the image in a new bug report on Nexus Mods (along with any helpful details)."
-                                 +
-                                  "\n\nNOTE: This is not a game crash; press OK to continue playing.";
+            string outputString = output + "\n\n"
+                                         + "BUG REPORTING: The easiest way to report this error is to snap an image of this message box with Snipping Tool or Lightshot, "
+                                         + "upload the image to imgur.com, and paste the link to the image in a new bug report on Nexus Mods (along with any helpful details)."
+                                         + "\n\nNOTE: This is not a game crash; press OK to continue playing.";
             if (Outputs.Contains(outputString))
                 return;
             Outputs.Add(outputString);
-            _ = MessageBox.Show(outputString, "Sorted Income encountered an exception", MessageBoxButtons.OK,
-                                MessageBoxIcon.Error);
+            _ = MessageBox.Show(outputString, "Sorted Income encountered an exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 }
