@@ -39,15 +39,16 @@ namespace SortedIncome
 
         private static readonly Dictionary<string, ItemCategory> ItemCategoryCache = new Dictionary<string, ItemCategory>();
 
-        internal static MethodInfo AddLine;
         internal static FieldInfo Value;
         internal static readonly Dictionary<string, string> TextObjectStrs = new Dictionary<string, string>();
+        internal static MethodInfo AddLine;
+        internal static object OperationType;
 
         private static Func<List<TooltipProperty>> currentTooltipFunc;
 
         private static bool wasLeftAltDown = LeftAltDown;
 
-        private static bool CanSort => AddLine != null && Value != null && TextObjectStrs.Count > 0;
+        internal static bool CanSort => Value != null && TextObjectStrs.Count > 0 && AddLine != null && OperationType != null;
         private static bool LeftAltDown => InputKey.LeftAlt.IsDown();
 
         internal static bool AddTooltip(object ____explainer, float value, ref TextObject description, TextObject variable)
@@ -67,7 +68,7 @@ namespace SortedIncome
             }
             try
             {
-                AddLine.Invoke(____explainer, new object[] { descriptionValue?.Length > 0 ? descriptionValue : description.ToString(), value, 1 });
+                AddLine.Invoke(____explainer, new[] { descriptionValue?.Length > 0 ? descriptionValue : description.ToString(), value, OperationType });
             }
             catch
             {
@@ -146,24 +147,17 @@ namespace SortedIncome
                                 variableValue = variableValue.Substring(0, varStart);
                             }
                         }
-                        object variation = description;
+                        object variation = false;
                         if (description == TextObjectStrs["partyIncome"] || description == TextObjectStrs["partyExpenses"]
                                                                          || description == TextObjectStrs["caravanIncome"]) // denars
                         {
-                            if (description == TextObjectStrs["caravanIncome"] || variableValue
-                             == (string)Value.GetValue(GameTexts.FindText("str_caravan_party_name")))
-                            {
+                            if (description == TextObjectStrs["caravanIncome"]
+                             || variableValue == (string)Value.GetValue(GameTexts.FindText("str_caravan_party_name")))
                                 description = SetupStrings("Caravan balance", "from", ("caravan", "caravans"));
-                            }
                             else if (variableValue == (string)Value.GetValue(GameTexts.FindText("str_garrison_party_name")))
-                            {
                                 description = SetupStrings("Garrison expenses", "for", ("garrison", "garrisons"));
-                            }
                             else
-                            {
-                                variation = false;
                                 description = SetupStrings("Party balance", "from", ("party", "parties"));
-                            }
                         }
                         else if (description == TextObjectStrs["tributeIncome"]) // denars
                         {
@@ -172,38 +166,34 @@ namespace SortedIncome
                         else if ((TryGetSettlementFromName(description, out Settlement settlement) && settlement.IsVillage)
                               || description == TextObjectStrs["villageIncome"]) // denars, food
                         {
-                            if (settlement != null)
-                                variation = false;
+                            if (settlement == null)
+                                variation = description;
                             description = SetupStrings("Village tax", "from", ("village", "villages"));
                         }
                         else if ((settlement != null && settlement.IsTown) || description == TextObjectStrs["townTax"]
                                                                            || description == TextObjectStrs["townTradeTax"]
                                                                            || description == TextObjectStrs["tariffTax"]) // denars
                         {
-                            if (settlement != null)
-                                variation = false;
+                            if (settlement == null)
+                                variation = description;
                             description = SetupStrings("Town tax & tariffs", "from", ("town", "towns"));
                         }
                         else if (settlement != null && settlement.IsCastle) // denars
                         {
-                            variation = false;
                             description = SetupStrings("Castle tax", "from", ("castle", "castles"));
                         }
                         else if (TryGetKingdomPolicyFromName(description, out _)) // denars, militia, food, loyalty, security, prosperity, settlement tax
                         {
-                            variation = false;
                             description = SetupStrings("Kingdom policies", "from", ("policy", "policies"));
                         }
                         else if (TryGetBuildingTypeFromName(description, out BuildingType buildingType)
                               && buildingType.GetBaseBuildingEffectAmount(BuildingEffectEnum.FoodProduction, buildingType.StartLevel) > 0) // food
                         {
-                            variation = false;
                             description = SetupStrings("Building production", "from", ("building", "buildings"));
                         }
                         else if (TryGetItemCategoryFromName(description, out ItemCategory itemCategory)
                               && itemCategory.Properties == ItemCategory.Property.BonusToFoodStores) // food
                         {
-                            variation = false;
                             description = SetupStrings("Sold food goods", "from", ("good", "goods"));
                         }
                         // Improved Garrisons support
@@ -227,7 +217,6 @@ namespace SortedIncome
                         }
                         else
                         {
-                            variation = false;
                             TextObject nameObj = new TextObject(description);
                             if (variable != null || variableValue != null)
                                 nameObj.SetTextVariable("A0", variable ?? variableValue);
