@@ -34,9 +34,7 @@ namespace SortedIncome
             _ = harmony.Patch(AccessTools.Method(typeof(CampaignUIHelper), nameof(CampaignUIHelper.GetTooltipForAccumulatingPropertyWithResult)), postfix: get);
             Sorting.Value = AccessTools.Field(AccessTools.TypeByName("TaleWorlds.Localization.TextObject"), "Value");
             if (Sorting.Value == null)
-            {
                 InformationManager.DisplayMessage(new InformationMessage("Sorted Income failed to get TextObject.Value field!", Colors.Red, "SortedIncome"));
-            }
             else
             {
                 IEnumerable<FieldInfo> fields = AccessTools.GetDeclaredFields(

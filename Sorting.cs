@@ -80,13 +80,15 @@ namespace SortedIncome
 
         internal static void BeginTooltip(Func<List<TooltipProperty>> ____tooltipProperties)
         {
-            if (!CanSort) return;
+            if (!CanSort)
+                return;
             currentTooltipFunc = ____tooltipProperties;
         }
 
         internal static void ShowTooltip(Type type)
         {
-            if (!CanSort) return;
+            if (!CanSort)
+                return;
             if (type != typeof(List<TooltipProperty>))
                 currentTooltipFunc = null;
         }
@@ -111,7 +113,8 @@ namespace SortedIncome
 
         internal static void GetTooltip(ref List<TooltipProperty> __result)
         {
-            if (!CanSort || LeftAltDown) return;
+            if (!CanSort || LeftAltDown)
+                return;
             SortTooltip(__result);
         }
 
@@ -127,7 +130,8 @@ namespace SortedIncome
                     TooltipProperty property = properties[i];
                     if (property.PropertyModifier == (int)TooltipPropertyFlags.None)
                     {
-                        if (start == -1) start = i;
+                        if (start == -1)
+                            start = i;
                         string description = property.DefinitionLabel;
                         //string debug = description;
                         if (description.Length < 1)
@@ -160,61 +164,43 @@ namespace SortedIncome
                                 description = SetupStrings("Party balance", "from", ("party", "parties"));
                         }
                         else if (description == TextObjectStrs["tributeIncome"]) // denars
-                        {
                             description = SetupStrings("Tribute", "from", ("kingdom", "kingdoms"));
-                        }
-                        else if ((TryGetSettlementFromName(description, out Settlement settlement) && settlement.IsVillage)
+                        else if (TryGetSettlementFromName(description, out Settlement settlement) && settlement.IsVillage
                               || description == TextObjectStrs["villageIncome"]) // denars, food
                         {
                             if (settlement == null)
                                 variation = description;
                             description = SetupStrings("Village tax", "from", ("village", "villages"));
                         }
-                        else if ((settlement != null && settlement.IsTown) || description == TextObjectStrs["townTax"]
-                                                                           || description == TextObjectStrs["townTradeTax"]
-                                                                           || description == TextObjectStrs["tariffTax"]) // denars
+                        else if (settlement != null && settlement.IsTown || description == TextObjectStrs["townTax"]
+                                                                         || description == TextObjectStrs["townTradeTax"]
+                                                                         || description == TextObjectStrs["tariffTax"]) // denars
                         {
                             if (settlement == null)
                                 variation = description;
                             description = SetupStrings("Town tax & tariffs", "from", ("town", "towns"));
                         }
                         else if (settlement != null && settlement.IsCastle) // denars
-                        {
                             description = SetupStrings("Castle tax", "from", ("castle", "castles"));
-                        }
                         else if (TryGetKingdomPolicyFromName(description, out _)) // denars, militia, food, loyalty, security, prosperity, settlement tax
-                        {
                             description = SetupStrings("Kingdom policies", "from", ("policy", "policies"));
-                        }
                         else if (TryGetBuildingTypeFromName(description, out BuildingType buildingType)
                               && buildingType.GetBaseBuildingEffectAmount(BuildingEffectEnum.FoodProduction, buildingType.StartLevel) > 0) // food
-                        {
                             description = SetupStrings("Building production", "from", ("building", "buildings"));
-                        }
                         else if (TryGetItemCategoryFromName(description, out ItemCategory itemCategory)
                               && itemCategory.Properties == ItemCategory.Property.BonusToFoodStores) // food
-                        {
                             description = SetupStrings("Sold food goods", "from", ("good", "goods"));
-                        }
                         // Improved Garrisons support
                         else if (description.StartsWith("{=misc_costmodel_trainingcosts}")
                               || description.StartsWith("Improved Garrison Training of ")) // denars
-                        {
                             description = SetupStrings("Garrison training", "for", ("garrison", "garrisons"));
-                        }
                         else if (description.StartsWith("{=misc_costmodel_recruitmentcosts}")
                               || description.StartsWith("Improved Garrison Recruitment of ")) // denars
-                        {
                             description = SetupStrings("Garrison recruitment", "for", ("garrison", "garrisons"));
-                        }
                         else if (description.StartsWith("{=misc_guardwages}") || description.EndsWith(" Guard wages")) // denars
-                        {
                             description = SetupStrings("Garrison guard wages", "for", ("garrison guard", "garrison guards"));
-                        }
                         else if (description.StartsWith("{=rhKxsdtz}") || description.EndsWith(" finance help")) // denars
-                        {
                             description = SetupStrings("Garrison financial help", "for", ("garrison", "garrisons"));
-                        }
                         else
                         {
                             TextObject nameObj = new TextObject(description);
@@ -234,16 +220,13 @@ namespace SortedIncome
                             Lines[description] = (line.number + number, line.variationMentions, Math.Max(line.textHeight, textHeight));
                         }
                         else
-                        {
                             Lines[description] = (number, new Dictionary<object, int> { [variation] = 1 }, textHeight);
-                        }
                     }
                     else if (start != -1 && end == -1)
-                    {
                         end = i - 1;
-                    }
                 }
-                if (start == -1 || end == -1) return;
+                if (start == -1 || end == -1)
+                    return;
                 for (int i = end; i >= start; i--)
                     properties.RemoveAt(i);
                 foreach (KeyValuePair<string, (float number, Dictionary<object, int> variationMentions, int textHeight)> line in Lines)
@@ -270,12 +253,12 @@ namespace SortedIncome
             countPrefix = countPrefix.TranslateWithDynamicId();
             countSuffix.singular = countSuffix.singular.TranslateWithDynamicId();
             countSuffix.plural = countSuffix.plural.TranslateWithDynamicId();
-            if (!Strings.ContainsKey(name)) Strings[name] = (countPrefix, countSuffix);
+            if (!Strings.ContainsKey(name))
+                Strings[name] = (countPrefix, countSuffix);
             return name;
         }
 
-        private static string GetFinalDescription
-            (string name, int mentions)
+        private static string GetFinalDescription(string name, int mentions)
             => !Strings.TryGetValue(name, out (string prefix, (string singular, string plural) suffix) strings)
                 ? name
                 : name + $" ({strings.prefix} {mentions} {(mentions == 1 ? strings.suffix.singular : strings.suffix.plural)})";

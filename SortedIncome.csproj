@@ -45,7 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Bannerlord.ReferenceAssemblies">
-      <Version>1.0.2.8368</Version>
+      <Version>1.0.3.8791</Version>
     </PackageReference>
     <PackageReference Include="Lib.Harmony">
       <Version>2.2.2</Version>

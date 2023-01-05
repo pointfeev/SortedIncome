@@ -6,8 +6,7 @@ namespace SortedIncome.Utilities
     {
         private const string ModPrefix = "si_";
 
-        private static string GetDynamicTranslationId
-            (this string s)
+        private static string GetDynamicTranslationId(this string s)
             => ModPrefix + s.ToLower().Trim().Replace(" ", "_").Replace("&", "and").Replace("'", "").Replace("(", "LP").Replace(")", "RP").Replace("[", "LB")
                             .Replace("]", "RB").Replace("{", "LSB").Replace("}", "RSB");
 
