@@ -53,20 +53,21 @@ namespace SortedIncome
         private static bool LeftAltDown => InputKey.LeftAlt.IsDown();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static string GetTextObjectStr(string key)
+        private static string GetTextObjectStr(string key, bool ignoreFailure = false)
         {
             if (!CanSort)
                 return string.Empty;
             if (TextObjectStrs.TryGetValue(key, out string str))
                 return str;
-            OutputUtils.DoCustomOutput("Failed to find TextObjectStr with key: " + key);
+            if (!ignoreFailure)
+                OutputUtils.DoCustomOutput("Failed to find TextObjectStr with key: " + key);
             return string.Empty;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static string GetTextObjectStr(string key, out string str)
+        private static string GetTextObjectStr(string key, out string str, bool ignoreFailure = false)
         {
-            str = GetTextObjectStr(key);
+            str = GetTextObjectStr(key, ignoreFailure);
             return str;
         }
 
@@ -183,8 +184,13 @@ namespace SortedIncome
                         }
                         else if (description == GetTextObjectStr("tributeIncome")) // denars
                             description = SetupStrings("Tribute", "from", ("kingdom", "kingdoms"));
-                        else if (TryGetSettlementFromName(description, out Settlement settlement) && settlement.IsVillage) // denars, food
+                        else if (TryGetSettlementFromName(description, out Settlement settlement) && settlement.IsVillage
+                              || description == GetTextObjectStr("villageIncome", true)) // denars, food
+                        {
+                            if (settlement == null)
+                                variation = description;
                             description = SetupStrings("Village tax", "from", ("village", "villages"));
+                        }
                         else if (settlement != null && settlement.IsTown || description == GetTextObjectStr("townTax")
                                                                          || description == GetTextObjectStr("townTradeTax")
                                                                          || description == GetTextObjectStr("tariffTax")) // denars
