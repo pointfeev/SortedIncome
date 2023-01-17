@@ -9,6 +9,22 @@ namespace SortedIncome.Utilities
     {
         private static readonly List<string> Outputs = new List<string>();
 
+        private static void DoOutput(StringBuilder output)
+        {
+            string outputString = output.AppendLine().AppendLine()
+                                        .Append(
+                                             "BUG REPORTING: The easiest way to report this error is to snap an image of this message box with Snipping Tool or Lightshot, ")
+                                        .Append(
+                                             "upload the image to imgur.com, and paste the link to the image in a new bug report on Nexus Mods (along with any helpful details).")
+                                        .AppendLine().AppendLine().Append("NOTE: This is not a game crash; press OK to continue playing.").ToString();
+            if (Outputs.Contains(outputString))
+                return;
+            Outputs.Add(outputString);
+            _ = MessageBox.Show(outputString, "Sorted Income encountered an exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+        internal static void DoCustomOutput(string output) => DoOutput(new StringBuilder(output));
+
         internal static void DoOutputForException(Exception e)
         {
             StringBuilder output = new StringBuilder();
@@ -42,14 +58,7 @@ namespace SortedIncome.Utilities
                 e = e.InnerException;
                 stackDepth++;
             }
-            string outputString = output + "\n\n"
-                                         + "BUG REPORTING: The easiest way to report this error is to snap an image of this message box with Snipping Tool or Lightshot, "
-                                         + "upload the image to imgur.com, and paste the link to the image in a new bug report on Nexus Mods (along with any helpful details)."
-                                         + "\n\nNOTE: This is not a game crash; press OK to continue playing.";
-            if (Outputs.Contains(outputString))
-                return;
-            Outputs.Add(outputString);
-            _ = MessageBox.Show(outputString, "Sorted Income encountered an exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            DoOutput(output);
         }
     }
 }

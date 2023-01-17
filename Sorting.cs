@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using SortedIncome.Utilities;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Extensions;
@@ -51,6 +52,24 @@ namespace SortedIncome
         internal static bool CanSort => Value != null && TextObjectStrs.Count > 0 && AddLine != null && OperationType != null;
         private static bool LeftAltDown => InputKey.LeftAlt.IsDown();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static string GetTextObjectStr(string key)
+        {
+            if (!CanSort)
+                return string.Empty;
+            if (TextObjectStrs.TryGetValue(key, out string str))
+                return str;
+            OutputUtils.DoCustomOutput("Failed to find TextObjectStr with key: " + key);
+            return string.Empty;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static string GetTextObjectStr(string key, out string str)
+        {
+            str = GetTextObjectStr(key);
+            return str;
+        }
+
         internal static bool AddTooltip(object ____explainer, float value, ref TextObject description, TextObject variable)
         {
             if (____explainer == null || description == null || variable == null || value.ApproximatelyEqualsTo(0f) || !CanSort || LeftAltDown)
@@ -68,7 +87,7 @@ namespace SortedIncome
             }
             try
             {
-                AddLine.Invoke(____explainer, new[] { descriptionValue?.Length > 0 ? descriptionValue : description.ToString(), value, OperationType });
+                _ = AddLine.Invoke(____explainer, new[] { descriptionValue?.Length > 0 ? descriptionValue : description.ToString(), value, OperationType });
             }
             catch
             {
@@ -118,7 +137,7 @@ namespace SortedIncome
             SortTooltip(__result);
         }
 
-        private static void SortTooltip(IList<TooltipProperty> properties)
+        private static void SortTooltip(List<TooltipProperty> properties)
         {
             try
             {
@@ -152,29 +171,23 @@ namespace SortedIncome
                             }
                         }
                         object variation = false;
-                        if (description == TextObjectStrs["partyIncome"] || description == TextObjectStrs["partyExpenses"]
-                                                                         || description == TextObjectStrs["caravanIncome"]) // denars
+                        if (description == GetTextObjectStr("caravanIncome", out string caravanIncome) || description == GetTextObjectStr("partyIncome")
+                         || description == GetTextObjectStr("partyExpenses")) // denars
                         {
-                            if (description == TextObjectStrs["caravanIncome"]
-                             || variableValue == (string)Value.GetValue(GameTexts.FindText("str_caravan_party_name")))
+                            if (description == caravanIncome || variableValue == (string)Value.GetValue(GameTexts.FindText("str_caravan_party_name")))
                                 description = SetupStrings("Caravan balance", "from", ("caravan", "caravans"));
                             else if (variableValue == (string)Value.GetValue(GameTexts.FindText("str_garrison_party_name")))
                                 description = SetupStrings("Garrison expenses", "for", ("garrison", "garrisons"));
                             else
                                 description = SetupStrings("Party balance", "from", ("party", "parties"));
                         }
-                        else if (description == TextObjectStrs["tributeIncome"]) // denars
+                        else if (description == GetTextObjectStr("tributeIncome")) // denars
                             description = SetupStrings("Tribute", "from", ("kingdom", "kingdoms"));
-                        else if (TryGetSettlementFromName(description, out Settlement settlement) && settlement.IsVillage
-                              || description == TextObjectStrs["villageIncome"]) // denars, food
-                        {
-                            if (settlement == null)
-                                variation = description;
+                        else if (TryGetSettlementFromName(description, out Settlement settlement) && settlement.IsVillage) // denars, food
                             description = SetupStrings("Village tax", "from", ("village", "villages"));
-                        }
-                        else if (settlement != null && settlement.IsTown || description == TextObjectStrs["townTax"]
-                                                                         || description == TextObjectStrs["townTradeTax"]
-                                                                         || description == TextObjectStrs["tariffTax"]) // denars
+                        else if (settlement != null && settlement.IsTown || description == GetTextObjectStr("townTax")
+                                                                         || description == GetTextObjectStr("townTradeTax")
+                                                                         || description == GetTextObjectStr("tariffTax")) // denars
                         {
                             if (settlement == null)
                                 variation = description;
