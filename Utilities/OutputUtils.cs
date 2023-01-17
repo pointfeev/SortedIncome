@@ -20,7 +20,7 @@ namespace SortedIncome.Utilities
             if (Outputs.Contains(outputString))
                 return;
             Outputs.Add(outputString);
-            _ = MessageBox.Show(outputString, "Sorted Income encountered an exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            _ = MessageBox.Show(outputString, "Aggregated Income encountered an exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         internal static void DoCustomOutput(string output) => DoOutput(new StringBuilder(output));
