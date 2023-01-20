@@ -127,8 +127,4 @@ echo 	Name = @(Name)
 echo 	Version = @(Version)
 echo 	Game version ^&gt;= @(GameVersion)</PostBuildEvent>
   </PropertyGroup>
-  <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
-  </PropertyGroup>
 </Project>
