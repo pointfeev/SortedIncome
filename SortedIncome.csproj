@@ -3,7 +3,7 @@
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{55C47F30-373C-4C5C-81F1-450E28809134}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -19,7 +19,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>latest</LangVersion>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
@@ -46,85 +46,11 @@
     </PackageReference>
     <PackageReference Include="Lib.Harmony">
       <Version>2.2.2</Version>
-      <ExcludeAssets>runtime</ExcludeAssets>
-      <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <UsingTask TaskName="GatherXmlMacros" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
-    <ParameterGroup>
-      <TargetPath ParameterType="System.String" Required="true" />
-      <Id ParameterType="System.String" Output="true" />
-      <Name ParameterType="System.String" Output="true" />
-      <Version ParameterType="System.String" Output="true" />
-      <GameVersion ParameterType="System.String" Output="true" />
-    </ParameterGroup>
-    <Task>
-      <Using Namespace="System.Reflection" />
-      <Using Namespace="System.Diagnostics" />
-      <Code Type="Fragment" Language="cs"><![CDATA[
-        FileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(this.TargetPath);
-        this.Name = versionInfo.ProductName;
-        this.Version = new Version(versionInfo.FileVersion).ToString(3);
-        AssemblyName assemblyName = Assembly.Load(File.ReadAllBytes(this.TargetPath)).GetName();
-        this.Id = assemblyName.Name;
-        this.GameVersion = assemblyName.Version.ToString(3);
-      ]]></Code>
-    </Task>
-  </UsingTask>
-  <Target Name="XmlMacros">
-    <GatherXmlMacros TargetPath="$(TargetPath)">
-      <Output TaskParameter="Id" PropertyName="Id" />
-      <Output TaskParameter="Name" PropertyName="Name" />
-      <Output TaskParameter="Version" PropertyName="Version" />
-      <Output TaskParameter="GameVersion" PropertyName="GameVersion" />
-    </GatherXmlMacros>
-    <ItemGroup>
-      <Id Include="$(Id)" />
-      <Name Include="$(Name)" />
-      <Version Include="$(Version)" />
-      <GameVersion Include="$(GameVersion)" />
-    </ItemGroup>
+  <UsingTask TaskName="Bannerlord.AutomaticSubModuleXML.AutomaticSubModuleXML" AssemblyFile="..\Bannerlord.AutomaticSubModuleXML.dll"/>
+  <Target Name="AutomaticSubModuleXML" AfterTargets="Build">
+    <AutomaticSubModuleXML TargetPath="$(TargetPath)" TargetDir="$(TargetDir)" />
   </Target>
-  <PropertyGroup>
-    <PostBuildEventDependsOn>
-			$(PostBuildEventDependsOn);
-			XmlMacros;
-		</PostBuildEventDependsOn>
-    <PostBuildEvent>echo ^&lt;?xml version="1.0" encoding="UTF-8"?^&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo ^&lt;Module xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/BUTR/Bannerlord.XmlSchemas/master/SubModule.xsd"^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo 	^&lt;Id value="@(Id)"/^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo 	^&lt;Name value="@(Name)"/^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo 	^&lt;Version value="v@(Version)"/^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo 	^&lt;DefaultModule value="true"/^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo 	^&lt;ModuleCategory value="Singleplayer"/^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo 	^&lt;ModuleType value="Community"/^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo 	^&lt;Url value="https://www.nexusmods.com/mountandblade2bannerlord/mods/3304"/^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo 	^&lt;DependedModules^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo 		^&lt;DependedModule Id="Bannerlord.Harmony" DependentVersion="v2.2.2" Optional="false"/^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo 		^&lt;DependedModule Id="Native" DependentVersion="v@(GameVersion)" Optional="false"/^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo 		^&lt;DependedModule Id="SandBoxCore" DependentVersion="v@(GameVersion)" Optional="false"/^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo 		^&lt;DependedModule Id="Sandbox" DependentVersion="v@(GameVersion)" Optional="false"/^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo 		^&lt;DependedModule Id="StoryMode" DependentVersion="v@(GameVersion)" Optional="false"/^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo 		^&lt;DependedModule Id="CustomBattle" DependentVersion="v@(GameVersion)" Optional="true"/^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo 		^&lt;DependedModule Id="BirthAndDeath" DependentVersion="v@(GameVersion)" Optional="true"/^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo 	^&lt;/DependedModules^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo 	^&lt;SubModules^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo 		^&lt;SubModule^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo 			^&lt;Name value="@(Id)"/^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo 			^&lt;DLLName value="@(Id).dll"/^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo 			^&lt;SubModuleClassType value="@(Id).SubModule"/^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo 			^&lt;Tags^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo 				^&lt;Tag key="DedicatedServerType" value="none"/^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo 				^&lt;Tag key="IsNoRenderModeElement" value="false"/^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo 			^&lt;/Tags^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo 		^&lt;/SubModule^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo 	^&lt;/SubModules^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo ^&lt;/Module^&gt;&gt;&gt;"$(TargetDir)..\..\SubModule.xml"
-echo SubModule.xml updated:
-echo 	Id = @(Id)
-echo 	Name = @(Name)
-echo 	Version = @(Version)
-echo 	Game version ^&gt;= @(GameVersion)</PostBuildEvent>
-  </PropertyGroup>
 </Project>
