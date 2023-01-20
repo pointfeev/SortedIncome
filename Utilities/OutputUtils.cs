@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
+using TaleWorlds.ModuleManager;
 
 namespace SortedIncome.Utilities
 {
@@ -9,21 +10,25 @@ namespace SortedIncome.Utilities
     {
         private static readonly List<string> Outputs = new List<string>();
 
-        private static void DoOutput(StringBuilder output)
+        internal static void DoOutput(StringBuilder output, MessageBoxIcon icon = MessageBoxIcon.Error, string title = " encountered an exception")
         {
-            string outputString = output.AppendLine().AppendLine()
-                                        .Append(
-                                             "BUG REPORTING: The easiest way to report this error is to snap an image of this message box with Snipping Tool or Lightshot, ")
-                                        .Append(
-                                             "upload the image to imgur.com, and paste the link to the image in a new bug report on Nexus Mods (along with any helpful details).")
-                                        .AppendLine().AppendLine().Append("NOTE: This is not a game crash; press OK to continue playing.").ToString();
+            output = output.AppendLine().AppendLine().Append("Module version: " + ModuleHelper.GetModuleInfo("SortedIncome").Version);
+            output = output.AppendLine().Append("Game version: " + ModuleHelper.GetModuleInfo("Native").Version);
+            string outputString = icon == MessageBoxIcon.Error
+                ? output.AppendLine().AppendLine()
+                        .Append("BUG REPORTING: The easiest way to report this error is to snap an image of this message box with Snipping Tool or Lightshot, ")
+                        .Append(
+                             "upload the image to imgur.com, and paste the link to the image in a new bug report on Nexus Mods (along with any helpful details).")
+                        .AppendLine().AppendLine().Append("NOTE: This is not a game crash; press OK to continue playing.").ToString()
+                : output.ToString();
             if (Outputs.Contains(outputString))
                 return;
             Outputs.Add(outputString);
-            _ = MessageBox.Show(outputString, "Aggregated Income encountered an exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            _ = MessageBox.Show(outputString, "Aggregated Income" + title, MessageBoxButtons.OK, icon);
         }
 
-        internal static void DoCustomOutput(string output) => DoOutput(new StringBuilder(output));
+        internal static void DoOutput(string output, MessageBoxIcon icon = MessageBoxIcon.Error, string title = " encountered an exception")
+            => DoOutput(new StringBuilder(output), icon, title);
 
         internal static void DoOutputForException(Exception e)
         {

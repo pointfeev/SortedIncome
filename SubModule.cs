@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
+using SortedIncome.Utilities;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.GameComponents;
 using TaleWorlds.CampaignSystem.ViewModelCollection;
 using TaleWorlds.Core.ViewModelCollection.Information;
-using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade;
 
@@ -21,6 +21,46 @@ namespace SortedIncome
             if (initialized)
                 return;
             initialized = true;
+            List<string> failures = new List<string>();
+            Sorting.Value = AccessTools.Field(typeof(TextObject), "Value");
+            if (Sorting.Value == null)
+                failures.Add("Failed to get TextObject.Value field");
+            else
+            {
+                IEnumerable<FieldInfo> fields = AccessTools.GetDeclaredFields(typeof(DefaultClanFinanceModel));
+                foreach (FieldInfo field in fields)
+                    if (field.FieldType == typeof(TextObject))
+                        Sorting.ModelTextValues.Add(field.Name.Trim(' ', '_').Replace("Str", ""),
+                            (string)Sorting.Value.GetValue((TextObject)field.GetValue(null)));
+                if (Sorting.ModelTextValues.Count == 0)
+                    failures.Add("Failed to get any DefaultClanFinanceModel TextObject fields");
+            }
+            Type statExplainer = AccessTools.TypeByName(typeof(ExplainedNumber).FullName + "+StatExplainer");
+            if (statExplainer == null)
+                failures.Add("Failed to get ExplainedNumber+StatExplainer type");
+            else
+            {
+                Sorting.AddLine = AccessTools.Method(statExplainer, "AddLine");
+                if (Sorting.AddLine == null)
+                    failures.Add("Failed to get StatExplainer.AddLine method");
+                Type operationType = AccessTools.TypeByName(statExplainer.FullName + "+OperationType");
+                if (operationType != null)
+                    try
+                    {
+                        Sorting.OperationType = Enum.ToObject(operationType, 1);
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                if (Sorting.OperationType == null)
+                    failures.Add("Failed to get StatExplainer+OperationType enum");
+            }
+            if (failures.Count > 0)
+            {
+                OutputUtils.DoOutput(string.Join("\n", failures), title: " failed to initialize");
+                return;
+            }
             Harmony harmony = new Harmony("pointfeev.sortedincome");
             HarmonyMethod add = new HarmonyMethod(typeof(Sorting), nameof(Sorting.AddTooltip));
             _ = harmony.Patch(AccessTools.Method(typeof(ExplainedNumber), nameof(ExplainedNumber.Add)), add);
@@ -33,48 +73,6 @@ namespace SortedIncome
             HarmonyMethod get = new HarmonyMethod(typeof(Sorting), nameof(Sorting.GetTooltip));
             _ = harmony.Patch(AccessTools.Method(typeof(CampaignUIHelper), nameof(CampaignUIHelper.GetTooltipForAccumulatingProperty)), postfix: get);
             _ = harmony.Patch(AccessTools.Method(typeof(CampaignUIHelper), nameof(CampaignUIHelper.GetTooltipForAccumulatingPropertyWithResult)), postfix: get);
-            Sorting.Value = AccessTools.Field(typeof(TextObject), "Value");
-            if (Sorting.Value == null)
-                InformationManager.DisplayMessage(new InformationMessage("Aggregated Income failed to get TextObject.Value field!", Colors.Red,
-                    "SortedIncome"));
-            else
-            {
-                IEnumerable<FieldInfo> fields = AccessTools.GetDeclaredFields(typeof(DefaultClanFinanceModel));
-                foreach (FieldInfo field in fields)
-                    if (field.FieldType == typeof(TextObject))
-                        Sorting.ModelTextValues.Add(field.Name.Trim(' ', '_').Replace("Str", ""),
-                            (string)Sorting.Value.GetValue((TextObject)field.GetValue(null)));
-                if (Sorting.ModelTextValues.Count == 0)
-                    InformationManager.DisplayMessage(new InformationMessage(
-                        "Aggregated Income failed to get any DefaultClanFinanceModel TextObject field values!", Colors.Red, "SortedIncome"));
-            }
-            Type statExplainer = AccessTools.TypeByName(typeof(ExplainedNumber).FullName + "+StatExplainer");
-            if (statExplainer == null)
-                InformationManager.DisplayMessage(new InformationMessage("Aggregated Income failed to get ExplainedNumber+StatExplainer type!", Colors.Red,
-                    "SortedIncome"));
-            else
-            {
-                Sorting.AddLine = AccessTools.Method(statExplainer, "AddLine");
-                if (Sorting.AddLine == null)
-                    InformationManager.DisplayMessage(new InformationMessage("Aggregated Income failed to get StatExplainer.AddLine method!", Colors.Red,
-                        "SortedIncome"));
-                Type operationType = AccessTools.TypeByName(statExplainer.FullName + "+OperationType");
-                if (operationType != null)
-                    try
-                    {
-                        Sorting.OperationType = Enum.ToObject(operationType, 1);
-                    }
-                    catch
-                    {
-                        // ignore
-                    }
-                if (Sorting.OperationType == null)
-                    InformationManager.DisplayMessage(new InformationMessage("Aggregated Income failed to get StatExplainer+OperationType enum!", Colors.Red,
-                        "SortedIncome"));
-            }
-            InformationManager.DisplayMessage(Sorting.CanSort
-                ? new InformationMessage("Aggregated Income initialized", Colors.Yellow, "SortedIncome")
-                : new InformationMessage("Aggregated Income failed to initialize", Colors.Red, "SortedIncome"));
         }
     }
 }

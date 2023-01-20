@@ -48,19 +48,15 @@ namespace SortedIncome
         private static Func<List<TooltipProperty>> currentTooltipFunc;
 
         private static bool wasLeftAltDown = LeftAltDown;
-
-        internal static bool CanSort => Value != null && ModelTextValues.Count > 0 && AddLine != null && OperationType != null;
         private static bool LeftAltDown => InputKey.LeftAlt.IsDown();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static string GetModelTextValue(string key, bool ignoreFailure = false)
         {
-            if (!CanSort)
-                return string.Empty;
             if (ModelTextValues.TryGetValue(key, out string str))
                 return str;
             if (!ignoreFailure)
-                OutputUtils.DoCustomOutput("Failed to get DefaultClanFinanceModel TextObject field value with key: " + key);
+                OutputUtils.DoOutput("Failed to get DefaultClanFinanceModel TextObject field: " + key);
             return string.Empty;
         }
 
@@ -73,7 +69,7 @@ namespace SortedIncome
 
         internal static bool AddTooltip(object ____explainer, float value, ref TextObject description, TextObject variable)
         {
-            if (____explainer == null || description == null || variable == null || value.ApproximatelyEqualsTo(0f) || !CanSort || LeftAltDown)
+            if (____explainer == null || description == null || variable == null || value.ApproximatelyEqualsTo(0f) || LeftAltDown)
                 return true;
             string descriptionValue;
             try
@@ -98,17 +94,10 @@ namespace SortedIncome
             return true;
         }
 
-        internal static void BeginTooltip(Func<List<TooltipProperty>> ____tooltipProperties)
-        {
-            if (!CanSort)
-                return;
-            currentTooltipFunc = ____tooltipProperties;
-        }
+        internal static void BeginTooltip(Func<List<TooltipProperty>> ____tooltipProperties) => currentTooltipFunc = ____tooltipProperties;
 
         internal static void ShowTooltip(Type type)
         {
-            if (!CanSort)
-                return;
             if (type != typeof(List<TooltipProperty>))
                 currentTooltipFunc = null;
         }
@@ -119,7 +108,7 @@ namespace SortedIncome
             if (wasLeftAltDown == leftAltDown)
                 return;
             wasLeftAltDown = leftAltDown;
-            if (currentTooltipFunc == null || __instance == null || !__instance.IsActive || !CanSort)
+            if (currentTooltipFunc == null || __instance == null || !__instance.IsActive)
                 return;
             try
             {
@@ -133,7 +122,7 @@ namespace SortedIncome
 
         internal static void GetTooltip(ref List<TooltipProperty> __result)
         {
-            if (!CanSort || LeftAltDown)
+            if (LeftAltDown)
                 return;
             SortTooltip(__result);
         }
