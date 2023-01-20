@@ -41,7 +41,7 @@ namespace SortedIncome
         private static readonly Dictionary<string, ItemCategory> ItemCategoryCache = new Dictionary<string, ItemCategory>();
 
         internal static FieldInfo Value;
-        internal static readonly Dictionary<string, string> TextObjectStrs = new Dictionary<string, string>();
+        internal static readonly Dictionary<string, string> ModelTextValues = new Dictionary<string, string>();
         internal static MethodInfo AddLine;
         internal static object OperationType;
 
@@ -49,25 +49,25 @@ namespace SortedIncome
 
         private static bool wasLeftAltDown = LeftAltDown;
 
-        internal static bool CanSort => Value != null && TextObjectStrs.Count > 0 && AddLine != null && OperationType != null;
+        internal static bool CanSort => Value != null && ModelTextValues.Count > 0 && AddLine != null && OperationType != null;
         private static bool LeftAltDown => InputKey.LeftAlt.IsDown();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static string GetTextObjectStr(string key, bool ignoreFailure = false)
+        private static string GetModelTextValue(string key, bool ignoreFailure = false)
         {
             if (!CanSort)
                 return string.Empty;
-            if (TextObjectStrs.TryGetValue(key, out string str))
+            if (ModelTextValues.TryGetValue(key, out string str))
                 return str;
             if (!ignoreFailure)
-                OutputUtils.DoCustomOutput("Failed to find TextObjectStr with key: " + key);
+                OutputUtils.DoCustomOutput("Failed to get DefaultClanFinanceModel TextObject field value with key: " + key);
             return string.Empty;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static string GetTextObjectStr(string key, out string str, bool ignoreFailure = false)
+        private static string GetModelTextValue(string key, out string str, bool ignoreFailure = false)
         {
-            str = GetTextObjectStr(key, ignoreFailure);
+            str = GetModelTextValue(key, ignoreFailure);
             return str;
         }
 
@@ -172,8 +172,8 @@ namespace SortedIncome
                             }
                         }
                         object variation = false;
-                        if (description == GetTextObjectStr("caravanIncome", out string caravanIncome) || description == GetTextObjectStr("partyIncome")
-                         || description == GetTextObjectStr("partyExpenses")) // denars
+                        if (description == GetModelTextValue("caravanIncome", out string caravanIncome) || description == GetModelTextValue("partyIncome")
+                         || description == GetModelTextValue("partyExpenses")) // denars
                         {
                             if (description == caravanIncome || variableValue == (string)Value.GetValue(GameTexts.FindText("str_caravan_party_name")))
                                 description = SetupStrings("Caravan balance", "from", ("caravan", "caravans"));
@@ -182,18 +182,18 @@ namespace SortedIncome
                             else
                                 description = SetupStrings("Party balance", "from", ("party", "parties"));
                         }
-                        else if (description == GetTextObjectStr("tributeIncome")) // denars
+                        else if (description == GetModelTextValue("tributeIncome")) // denars
                             description = SetupStrings("Tribute", "from", ("kingdom", "kingdoms"));
                         else if (TryGetSettlementFromName(description, out Settlement settlement) && settlement.IsVillage
-                              || description == GetTextObjectStr("villageIncome", true)) // denars, food
+                              || description == GetModelTextValue("villageIncome", true)) // denars, food
                         {
                             if (settlement == null)
                                 variation = description;
                             description = SetupStrings("Village tax", "from", ("village", "villages"));
                         }
-                        else if (settlement != null && settlement.IsTown || description == GetTextObjectStr("townTax")
-                                                                         || description == GetTextObjectStr("townTradeTax")
-                                                                         || description == GetTextObjectStr("tariffTax")) // denars
+                        else if (settlement != null && settlement.IsTown || description == GetModelTextValue("townTax")
+                                                                         || description == GetModelTextValue("townTradeTax")
+                                                                         || description == GetModelTextValue("tariffTax")) // denars
                         {
                             if (settlement == null)
                                 variation = description;
