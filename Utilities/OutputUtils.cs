@@ -16,10 +16,9 @@ internal static class OutputUtils
         output = output.AppendLine().Append("Game version: " + ModuleHelper.GetModuleInfo("Native").Version);
         string outputString = icon == MessageBoxIcon.Error
             ? output.AppendLine().AppendLine()
-                    .Append("BUG REPORTING: The easiest way to report this error is to snap an image of this message box with Snipping Tool or Lightshot, ")
-                    .Append(
-                         "upload the image to imgur.com, and paste the link to the image in a new bug report on Nexus Mods (along with any helpful details).")
-                    .AppendLine().AppendLine().Append("NOTE: This is not a game crash; press OK to continue playing.").ToString()
+               .Append("BUG REPORTING: The easiest way to report this error is to snap an image of this message box with Snipping Tool or Lightshot, ")
+               .Append("upload the image to imgur.com, and paste the link to the image in a new bug report on Nexus Mods (along with any helpful details).")
+               .AppendLine().AppendLine().Append("NOTE: This is not a game crash; press OK to continue playing.").ToString()
             : output.ToString();
         if (Outputs.Contains(outputString))
             return;

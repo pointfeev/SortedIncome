@@ -162,14 +162,11 @@ internal static class Sorting
                     if (description == GetModelTextValue("caravanIncome", out string caravanIncome) || description == GetModelTextValue("partyIncome")
                                                                                                     || description == GetModelTextValue(
                                                                                                            "partyExpenses")) // denars
-                    {
-                        if (description == caravanIncome || variableValue == (string)Value.GetValue(GameTexts.FindText("str_caravan_party_name")))
-                            description = SetupStrings("Caravan balance", "from", ("caravan", "caravans"));
-                        else if (variableValue == (string)Value.GetValue(GameTexts.FindText("str_garrison_party_name")))
-                            description = SetupStrings("Garrison expenses", "for", ("garrison", "garrisons"));
-                        else
-                            description = SetupStrings("Party balance", "from", ("party", "parties"));
-                    }
+                        description = description == caravanIncome || variableValue == (string)Value.GetValue(GameTexts.FindText("str_caravan_party_name"))
+                            ? SetupStrings("Caravan balance", "from", ("caravan", "caravans"))
+                            : variableValue == (string)Value.GetValue(GameTexts.FindText("str_garrison_party_name"))
+                                ? SetupStrings("Garrison expenses", "for", ("garrison", "garrisons"))
+                                : SetupStrings("Party balance", "from", ("party", "parties"));
                     else if (description == GetModelTextValue("tributeIncome")) // denars
                         description = SetupStrings("Tribute", "from", ("kingdom", "kingdoms"));
                     else if (TryGetSettlementFromName(description, out Settlement settlement) && settlement.IsVillage
@@ -179,15 +176,14 @@ internal static class Sorting
                             variation = description;
                         description = SetupStrings("Village tax", "from", ("village", "villages"));
                     }
-                    else if (settlement != null && settlement.IsTown || description == GetModelTextValue("townTax")
-                                                                     || description == GetModelTextValue("townTradeTax")
-                                                                     || description == GetModelTextValue("tariffTax")) // denars
+                    else if (settlement is { IsTown: true } || description == GetModelTextValue("townTax") || description == GetModelTextValue("townTradeTax")
+                          || description == GetModelTextValue("tariffTax")) // denars
                     {
                         if (settlement == null)
                             variation = description;
                         description = SetupStrings("Town tax & tariffs", "from", ("town", "towns"));
                     }
-                    else if (settlement != null && settlement.IsCastle) // denars
+                    else if (settlement is { IsCastle: true }) // denars
                         description = SetupStrings("Castle tax", "from", ("castle", "castles"));
                     else if (TryGetKingdomPolicyFromName(description, out _)) // denars, militia, food, loyalty, security, prosperity, settlement tax
                         description = SetupStrings("Kingdom policies", "from", ("policy", "policies"));
@@ -211,7 +207,7 @@ internal static class Sorting
                     {
                         TextObject nameObj = new(description);
                         if (variable != null || variableValue != null)
-                            nameObj.SetTextVariable("A0", variable ?? variableValue);
+                            _ = nameObj.SetTextVariable("A0", variable ?? variableValue);
                         //description = debug + "===" + nameObj;
                         description = nameObj.ToString();
                     }
@@ -221,7 +217,7 @@ internal static class Sorting
                     int textHeight = property.TextHeight;
                     if (Lines.TryGetValue(description, out (float number, Dictionary<object, int> variationMentions, int textHeight) line))
                     {
-                        line.variationMentions.TryGetValue(variation, out int mentions);
+                        _ = line.variationMentions.TryGetValue(variation, out int mentions);
                         line.variationMentions[variation] = mentions + 1;
                         Lines[description] = (line.number + number, line.variationMentions, Math.Max(line.textHeight, textHeight));
                     }
