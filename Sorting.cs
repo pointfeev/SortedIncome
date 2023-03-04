@@ -65,6 +65,17 @@ internal static class Sorting
         return str;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static string GetGameTextValue(string key, bool ignoreFailure = false)
+    {
+        string str = (string)Value.GetValue(GameTexts.FindText(key));
+        if (!str.StartsWith("{=!}ERROR"))
+            return str;
+        if (!ignoreFailure)
+            OutputUtils.DoOutput("Failed to get GameTexts TextObject field: " + key);
+        return string.Empty;
+    }
+
     internal static bool AddTooltip(object ____explainer, float value, ref TextObject description, TextObject variable)
     {
         if (____explainer == null || description == null || variable == null || value.ApproximatelyEqualsTo(0f) || LeftAltDown)
@@ -106,7 +117,7 @@ internal static class Sorting
         if (wasLeftAltDown == leftAltDown)
             return;
         wasLeftAltDown = leftAltDown;
-        if (currentTooltipFunc == null || __instance == null || !__instance.IsActive)
+        if (currentTooltipFunc == null || __instance is not { IsActive: true })
             return;
         try
         {
@@ -159,25 +170,25 @@ internal static class Sorting
                         }
                     }
                     object variation = false;
-                    if (description == GetModelTextValue("caravanIncome", out string caravanIncome) || description == GetModelTextValue("partyIncome")
-                                                                                                    || description == GetModelTextValue(
-                                                                                                           "partyExpenses")) // denars
-                        description = description == caravanIncome || variableValue == (string)Value.GetValue(GameTexts.FindText("str_caravan_party_name"))
+                    if (description == GetModelTextValue("caravanIncome", out string caravanIncome, true)
+                     || description == GetModelTextValue("partyIncome", true) || description == GetModelTextValue("partyExpenses", true)) // denars
+                        description = description == caravanIncome || variableValue == GetGameTextValue("str_caravan_party_name")
                             ? SetupStrings("Caravan balance", "from", ("caravan", "caravans"))
-                            : variableValue == (string)Value.GetValue(GameTexts.FindText("str_garrison_party_name"))
+                            : variableValue == GetGameTextValue("str_garrison_party_name")
                                 ? SetupStrings("Garrison expenses", "for", ("garrison", "garrisons"))
                                 : SetupStrings("Party balance", "from", ("party", "parties"));
                     else if (description == GetModelTextValue("tributeIncome")) // denars
                         description = SetupStrings("Tribute", "from", ("kingdom", "kingdoms"));
-                    else if (TryGetSettlementFromName(description, out Settlement settlement) && settlement.IsVillage
+                    else if (TryGetSettlementFromName(description, out Settlement settlement) && settlement is { IsVillage: true }
                           || description == GetModelTextValue("villageIncome", true)) // denars, food
                     {
                         if (settlement == null)
                             variation = description;
                         description = SetupStrings("Village tax", "from", ("village", "villages"));
                     }
-                    else if (settlement is { IsTown: true } || description == GetModelTextValue("townTax") || description == GetModelTextValue("townTradeTax")
-                          || description == GetModelTextValue("tariffTax")) // denars
+                    else if (settlement is { IsTown: true } || description == GetModelTextValue("townTax", true)
+                                                            || description == GetModelTextValue("townTradeTax", true)
+                                                            || description == GetModelTextValue("tariffTax", true)) // denars
                     {
                         if (settlement == null)
                             variation = description;
