@@ -48,6 +48,8 @@ internal static class Sorting
     private static bool wasLeftAltDown = LeftAltDown;
     private static bool LeftAltDown => InputKey.LeftAlt.IsDown();
 
+    internal static void IncludeDetails(ref bool includeDetails) => includeDetails = true;
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static string GetModelTextValue(string key, bool ignoreFailure = false)
     {
@@ -170,32 +172,31 @@ internal static class Sorting
                         }
                     }
                     object variation = false;
-                    if (description == GetModelTextValue("caravanIncome", out string caravanIncome, true)
-                     || description == GetModelTextValue("partyIncome", true) || description == GetModelTextValue("partyExpenses", true)) // denars
-                        description = description == caravanIncome || variableValue == GetGameTextValue("str_caravan_party_name")
+                    if (description == GetModelTextValue("caravanIncome", out string caravanIncome) || description == GetModelTextValue("partyIncome")
+                                                                                                    || description == GetModelTextValue(
+                                                                                                           "partyExpenses")) // denars
+                        description = description == caravanIncome
                             ? SetupStrings("Caravan balance", "from", ("caravan", "caravans"))
-                            : variableValue == GetGameTextValue("str_garrison_party_name")
+                            : variableValue != null && (variableValue.StartsWith("{=fsTBcLvA}")
+                                                     || variableValue == GetGameTextValue("str_garrison_party_name")) // for pre-v1.1.0
                                 ? SetupStrings("Garrison expenses", "for", ("garrison", "garrisons"))
                                 : SetupStrings("Party balance", "from", ("party", "parties"));
                     else if (description == GetModelTextValue("tributeIncome")) // denars
                         description = SetupStrings("Tribute", "from", ("kingdom", "kingdoms"));
-                    else if (TryGetSettlementFromName(description, out Settlement settlement) && settlement is { IsVillage: true }
-                          || description == GetModelTextValue("villageIncome", true)) // denars, food
+                    else if (description == GetModelTextValue("townTax", out string townTax)
+                           | description == GetModelTextValue("tariffTax", out string tariffTax)
+                           | (TryGetSettlementFromName(description, out Settlement settlement)
+                           || TryGetSettlementFromName(variable, out settlement))) // denars, food
                     {
-                        if (settlement == null)
+                        if (description == townTax || description == tariffTax)
                             variation = description;
-                        description = SetupStrings("Village tax", "from", ("village", "villages"));
+                        description = settlement switch
+                        {
+                            { IsVillage: true } => SetupStrings("Village tax", "from", ("village", "villages")),
+                            { IsCastle: true } => SetupStrings("Castle tax", "from", ("castle", "castles")),
+                            _ => SetupStrings("Town tax & tariffs", "from", ("town", "towns"))
+                        };
                     }
-                    else if (settlement is { IsTown: true } || description == GetModelTextValue("townTax", true)
-                                                            || description == GetModelTextValue("townTradeTax", true)
-                                                            || description == GetModelTextValue("tariffTax", true)) // denars
-                    {
-                        if (settlement == null)
-                            variation = description;
-                        description = SetupStrings("Town tax & tariffs", "from", ("town", "towns"));
-                    }
-                    else if (settlement is { IsCastle: true }) // denars
-                        description = SetupStrings("Castle tax", "from", ("castle", "castles"));
                     else if (TryGetKingdomPolicyFromName(description, out _)) // denars, militia, food, loyalty, security, prosperity, settlement tax
                         description = SetupStrings("Kingdom policies", "from", ("policy", "policies"));
                     else if (TryGetBuildingTypeFromName(description, out BuildingType buildingType)
@@ -277,6 +278,9 @@ internal static class Sorting
 
     private static bool TryGetSettlementFromName(string name, out Settlement settlement)
     {
+        settlement = null;
+        if (string.IsNullOrWhiteSpace(name))
+            return false;
         if (SettlementCache.TryGetValue(name, out settlement))
             return settlement is not null;
         if (Campaign.Current is null || (settlements = Settlement.All) is null)
@@ -292,6 +296,9 @@ internal static class Sorting
 
     private static bool TryGetKingdomPolicyFromName(string name, out PolicyObject policyObject)
     {
+        policyObject = null;
+        if (string.IsNullOrWhiteSpace(name))
+            return false;
         if (PolicyObjectCache.TryGetValue(name, out policyObject))
             return policyObject is not null;
         if (Campaign.Current is null || (policyObjects = PolicyObject.All) is null)
@@ -307,6 +314,9 @@ internal static class Sorting
 
     private static bool TryGetBuildingTypeFromName(string name, out BuildingType buildingType)
     {
+        buildingType = null;
+        if (string.IsNullOrWhiteSpace(name))
+            return false;
         if (BuildingTypesCache.TryGetValue(name, out buildingType))
             return buildingType is not null;
         if (Campaign.Current is null || (buildingTypes = BuildingType.All) is null)
@@ -322,6 +332,9 @@ internal static class Sorting
 
     private static bool TryGetItemCategoryFromName(string name, out ItemCategory itemCategory)
     {
+        itemCategory = null;
+        if (string.IsNullOrWhiteSpace(name))
+            return false;
         if (ItemCategoryCache.TryGetValue(name, out itemCategory))
             return itemCategory is not null;
         if (Campaign.Current is null || (itemCategories = ItemCategories.All) is null)

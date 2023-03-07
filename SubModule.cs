@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using SortedIncome.Utilities;
@@ -7,7 +8,9 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.GameComponents;
 using TaleWorlds.CampaignSystem.ViewModelCollection;
 using TaleWorlds.Core.ViewModelCollection.Information;
+using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.ModuleManager;
 using TaleWorlds.MountAndBlade;
 
 namespace SortedIncome;
@@ -61,6 +64,13 @@ public class SubModule : MBSubModuleBase
             return;
         }
         Harmony harmony = new("pointfeev.sortedincome");
+        if (ModuleHelper.GetModules().First(m => m.IsNative).Version >= ApplicationVersion.FromString("v1.1.0"))
+        {
+            HarmonyMethod include = new(typeof(Sorting), nameof(Sorting.IncludeDetails));
+            _ = harmony.Patch(AccessTools.Method(typeof(DefaultClanFinanceModel), nameof(DefaultClanFinanceModel.CalculateClanGoldChange)), include);
+            _ = harmony.Patch(AccessTools.Method(typeof(DefaultClanFinanceModel), nameof(DefaultClanFinanceModel.CalculateClanIncome)), include);
+            _ = harmony.Patch(AccessTools.Method(typeof(DefaultClanFinanceModel), nameof(DefaultClanFinanceModel.CalculateClanExpenses)), include);
+        }
         HarmonyMethod add = new(typeof(Sorting), nameof(Sorting.AddTooltip));
         _ = harmony.Patch(AccessTools.Method(typeof(ExplainedNumber), nameof(ExplainedNumber.Add)), add);
         HarmonyMethod begin = new(typeof(Sorting), nameof(Sorting.BeginTooltip));
