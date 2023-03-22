@@ -29,7 +29,7 @@ internal static class OutputUtils
     internal static void DoOutput(string output, MessageBoxIcon icon = MessageBoxIcon.Error, string title = " encountered an exception")
         => DoOutput(new StringBuilder(output), icon, title);
 
-    internal static void DoOutputForException(Exception e)
+    private static StringBuilder GetOutputForException(Exception e)
     {
         StringBuilder output = new();
         int stackDepth = 0;
@@ -62,6 +62,11 @@ internal static class OutputUtils
             e = e.InnerException;
             stackDepth++;
         }
-        DoOutput(output);
+        return output;
     }
+
+    internal static void DoOutputForException(Exception e) => DoOutput(GetOutputForException(e));
+
+    internal static void DoOutputForFinalizer(Exception e)
+        => DoOutput(GetOutputForException(e), MessageBoxIcon.Warning, " caught an unrelated exception from a finalizer");
 }

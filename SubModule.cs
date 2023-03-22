@@ -64,23 +64,22 @@ public class SubModule : MBSubModuleBase
             return;
         }
         Harmony harmony = new("pointfeev.sortedincome");
-        if (ModuleHelper.GetModules().First(m => m.IsNative).Version >= ApplicationVersion.FromString("v1.1.0"))
-        {
-            HarmonyMethod include = new(typeof(Sorting), nameof(Sorting.IncludeDetails));
-            _ = harmony.Patch(AccessTools.Method(typeof(DefaultClanFinanceModel), nameof(DefaultClanFinanceModel.CalculateClanGoldChange)), include);
-            _ = harmony.Patch(AccessTools.Method(typeof(DefaultClanFinanceModel), nameof(DefaultClanFinanceModel.CalculateClanIncome)), include);
-            _ = harmony.Patch(AccessTools.Method(typeof(DefaultClanFinanceModel), nameof(DefaultClanFinanceModel.CalculateClanExpenses)), include);
-        }
+        HarmonyMethod get = new(typeof(Sorting), nameof(Sorting.GetTooltip));
+        _ = harmony.Patch(AccessTools.Method(typeof(CampaignUIHelper), nameof(CampaignUIHelper.GetTooltipForAccumulatingProperty)), finalizer: get);
+        _ = harmony.Patch(AccessTools.Method(typeof(CampaignUIHelper), nameof(CampaignUIHelper.GetTooltipForAccumulatingPropertyWithResult)), finalizer: get);
+        HarmonyMethod tick = new(typeof(Sorting), nameof(Sorting.TickTooltip));
+        _ = harmony.Patch(AccessTools.Method(typeof(PropertyBasedTooltipVM), nameof(PropertyBasedTooltipVM.Tick)), finalizer: tick);
+        HarmonyMethod show = new(typeof(Sorting), nameof(Sorting.ShowTooltip));
+        _ = harmony.Patch(AccessTools.Method(typeof(PropertyBasedTooltipVM), nameof(PropertyBasedTooltipVM.OnShowTooltip)), finalizer: show);
+        HarmonyMethod begin = new(typeof(Sorting), nameof(Sorting.BeginTooltip));
+        _ = harmony.Patch(AccessTools.Method(typeof(BasicTooltipViewModel), nameof(BasicTooltipViewModel.ExecuteBeginHint)), finalizer: begin);
         HarmonyMethod add = new(typeof(Sorting), nameof(Sorting.AddTooltip));
         _ = harmony.Patch(AccessTools.Method(typeof(ExplainedNumber), nameof(ExplainedNumber.Add)), add);
-        HarmonyMethod begin = new(typeof(Sorting), nameof(Sorting.BeginTooltip));
-        _ = harmony.Patch(AccessTools.Method(typeof(BasicTooltipViewModel), nameof(BasicTooltipViewModel.ExecuteBeginHint)), postfix: begin);
-        HarmonyMethod show = new(typeof(Sorting), nameof(Sorting.ShowTooltip));
-        _ = harmony.Patch(AccessTools.Method(typeof(PropertyBasedTooltipVM), nameof(PropertyBasedTooltipVM.OnShowTooltip)), postfix: show);
-        HarmonyMethod tick = new(typeof(Sorting), nameof(Sorting.TickTooltip));
-        _ = harmony.Patch(AccessTools.Method(typeof(PropertyBasedTooltipVM), nameof(PropertyBasedTooltipVM.Tick)), postfix: tick);
-        HarmonyMethod get = new(typeof(Sorting), nameof(Sorting.GetTooltip));
-        _ = harmony.Patch(AccessTools.Method(typeof(CampaignUIHelper), nameof(CampaignUIHelper.GetTooltipForAccumulatingProperty)), postfix: get);
-        _ = harmony.Patch(AccessTools.Method(typeof(CampaignUIHelper), nameof(CampaignUIHelper.GetTooltipForAccumulatingPropertyWithResult)), postfix: get);
+        if (ModuleHelper.GetModules().First(m => m.IsNative).Version < ApplicationVersion.FromString("v1.1.0"))
+            return;
+        HarmonyMethod include = new(typeof(Sorting), nameof(Sorting.IncludeDetails));
+        _ = harmony.Patch(AccessTools.Method(typeof(DefaultClanFinanceModel), nameof(DefaultClanFinanceModel.CalculateClanGoldChange)), include);
+        _ = harmony.Patch(AccessTools.Method(typeof(DefaultClanFinanceModel), nameof(DefaultClanFinanceModel.CalculateClanIncome)), include);
+        _ = harmony.Patch(AccessTools.Method(typeof(DefaultClanFinanceModel), nameof(DefaultClanFinanceModel.CalculateClanExpenses)), include);
     }
 }

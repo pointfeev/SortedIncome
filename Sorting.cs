@@ -13,7 +13,6 @@ using TaleWorlds.Core.ViewModelCollection.Information;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
-using static TaleWorlds.Core.ViewModelCollection.Information.TooltipProperty;
 
 namespace SortedIncome;
 
@@ -105,37 +104,51 @@ internal static class Sorting
         return true;
     }
 
-    internal static void BeginTooltip(Func<List<TooltipProperty>> ____tooltipProperties) => currentTooltipFunc = ____tooltipProperties;
+    internal static Exception BeginTooltip(Exception __exception, Func<List<TooltipProperty>> ____tooltipProperties)
+    {
+        currentTooltipFunc = ____tooltipProperties;
+        if (__exception != null)
+            OutputUtils.DoOutputForFinalizer(__exception);
+        return null;
+    }
 
-    internal static void ShowTooltip(Type type)
+    internal static Exception ShowTooltip(Exception __exception, Type type)
     {
         if (type != typeof(List<TooltipProperty>))
             currentTooltipFunc = null;
+        if (__exception != null)
+            OutputUtils.DoOutputForFinalizer(__exception);
+        return null;
     }
 
-    internal static void TickTooltip(PropertyBasedTooltipVM __instance)
+    internal static Exception TickTooltip(Exception __exception, PropertyBasedTooltipVM __instance)
     {
         bool leftAltDown = LeftAltDown;
-        if (wasLeftAltDown == leftAltDown)
-            return;
-        wasLeftAltDown = leftAltDown;
-        if (currentTooltipFunc == null || __instance is not { IsActive: true })
-            return;
-        try
+        if (wasLeftAltDown != leftAltDown)
         {
-            InformationManager.ShowTooltip(typeof(List<TooltipProperty>), currentTooltipFunc());
+            wasLeftAltDown = leftAltDown;
+            if (currentTooltipFunc != null && __instance is { IsActive: true })
+                try
+                {
+                    InformationManager.ShowTooltip(typeof(List<TooltipProperty>), currentTooltipFunc());
+                }
+                catch
+                {
+                    // ignore
+                }
         }
-        catch
-        {
-            // ignore
-        }
+        if (__exception != null)
+            OutputUtils.DoOutputForFinalizer(__exception);
+        return null;
     }
 
-    internal static void GetTooltip(ref List<TooltipProperty> __result)
+    internal static Exception GetTooltip(Exception __exception, ref List<TooltipProperty> __result)
     {
-        if (LeftAltDown)
-            return;
-        SortTooltip(__result);
+        if (!LeftAltDown)
+            SortTooltip(__result);
+        if (__exception != null)
+            OutputUtils.DoOutputForFinalizer(__exception);
+        return null;
     }
 
     private static void SortTooltip(List<TooltipProperty> properties)
@@ -148,7 +161,7 @@ internal static class Sorting
             for (int i = 0; i < properties.Count; i++)
             {
                 TooltipProperty property = properties[i];
-                if (property.PropertyModifier == (int)TooltipPropertyFlags.None)
+                if (property.PropertyModifier == (int)TooltipProperty.TooltipPropertyFlags.None)
                 {
                     if (start == -1)
                         start = i;

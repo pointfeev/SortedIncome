@@ -36,8 +36,8 @@
     <Compile Include="Utilities\OutputUtils.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Bannerlord.ReferenceAssemblies">
-      <Version>1.1.0.12734</Version>
+    <PackageReference Include="Bannerlord.ReferenceAssemblies.Core">
+      <Version>1.1.1.141481</Version>
     </PackageReference>
     <PackageReference Include="Lib.Harmony">
       <Version>2.2.2</Version>
