@@ -107,8 +107,8 @@ internal static class Sorting
     internal static Exception BeginTooltip(Exception __exception, Func<List<TooltipProperty>> ____tooltipProperties)
     {
         currentTooltipFunc = ____tooltipProperties;
-        if (__exception != null)
-            OutputUtils.DoOutputForFinalizer(__exception);
+        /*if (__exception != null)
+            OutputUtils.DoOutputForFinalizer(__exception);*/
         return null;
     }
 
@@ -116,8 +116,8 @@ internal static class Sorting
     {
         if (type != typeof(List<TooltipProperty>))
             currentTooltipFunc = null;
-        if (__exception != null)
-            OutputUtils.DoOutputForFinalizer(__exception);
+        /*if (__exception != null)
+            OutputUtils.DoOutputForFinalizer(__exception);*/
         return null;
     }
 
@@ -137,8 +137,8 @@ internal static class Sorting
                     // ignore
                 }
         }
-        if (__exception != null)
-            OutputUtils.DoOutputForFinalizer(__exception);
+        /*if (__exception != null)
+            OutputUtils.DoOutputForFinalizer(__exception);*/
         return null;
     }
 
@@ -146,8 +146,8 @@ internal static class Sorting
     {
         if (!LeftAltDown)
             SortTooltip(__result);
-        if (__exception != null)
-            OutputUtils.DoOutputForFinalizer(__exception);
+        /*if (__exception != null)
+            OutputUtils.DoOutputForFinalizerDoOutputForFinalizer(__exception);*/
         return null;
     }
 

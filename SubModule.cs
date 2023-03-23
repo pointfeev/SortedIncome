@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using SortedIncome.Utilities;
@@ -60,7 +59,7 @@ public class SubModule : MBSubModuleBase
         }
         if (failures.Count > 0)
         {
-            OutputUtils.DoOutput(string.Join("\n", failures), title: " failed to initialize");
+            OutputUtils.DoOutput(string.Join("\n", failures), OutputType.Initialization);
             return;
         }
         Harmony harmony = new("pointfeev.sortedincome");
@@ -75,7 +74,7 @@ public class SubModule : MBSubModuleBase
         _ = harmony.Patch(AccessTools.Method(typeof(BasicTooltipViewModel), nameof(BasicTooltipViewModel.ExecuteBeginHint)), finalizer: begin);
         HarmonyMethod add = new(typeof(Sorting), nameof(Sorting.AddTooltip));
         _ = harmony.Patch(AccessTools.Method(typeof(ExplainedNumber), nameof(ExplainedNumber.Add)), add);
-        if (ModuleHelper.GetModules().First(m => m.IsNative).Version < ApplicationVersion.FromString("v1.1.0"))
+        if (ModuleHelper.GetModuleInfo("Native").Version < ApplicationVersion.FromString("v1.1.0"))
             return;
         HarmonyMethod include = new(typeof(Sorting), nameof(Sorting.IncludeDetails));
         _ = harmony.Patch(AccessTools.Method(typeof(DefaultClanFinanceModel), nameof(DefaultClanFinanceModel.CalculateClanGoldChange)), include);

@@ -6,28 +6,49 @@ using TaleWorlds.ModuleManager;
 
 namespace SortedIncome.Utilities;
 
+internal enum OutputType { Initialization, Exception, FinalizerException }
+
 internal static class OutputUtils
 {
     private static readonly List<string> Outputs = new();
 
-    internal static void DoOutput(StringBuilder output, MessageBoxIcon icon = MessageBoxIcon.Error, string title = " encountered an exception")
+    internal static void DoOutput(StringBuilder output, OutputType outputType = OutputType.Exception)
     {
         output = output.AppendLine().AppendLine().Append("Module version: " + ModuleHelper.GetModuleInfo("SortedIncome").Version);
         output = output.AppendLine().Append("Game version: " + ModuleHelper.GetModuleInfo("Native").Version);
-        string outputString = icon == MessageBoxIcon.Error
-            ? output.AppendLine().AppendLine()
-               .Append("BUG REPORTING: The easiest way to report this error is to snap an image of this message box with Snipping Tool or Lightshot, ")
-               .Append("upload the image to imgur.com, and paste the link to the image in a new bug report on Nexus Mods (along with any helpful details).")
-               .AppendLine().AppendLine().Append("NOTE: This is not a game crash; press OK to continue playing.").ToString()
-            : output.ToString();
+        switch (outputType)
+        {
+            case OutputType.Initialization:
+                break;
+            case OutputType.Exception:
+                output = output.AppendLine().AppendLine()
+                   .Append("BUG REPORTING: The easiest way to report this error is to snap an image of this message box with Snipping Tool or Lightshot, ")
+                   .Append(
+                        "upload the image to imgur.com, and paste the link to the image in a new bug report on Nexus Mods (along with any helpful details).");
+                break;
+            case OutputType.FinalizerException:
+                output = output.AppendLine().AppendLine()
+                   .Append("BUG REPORTING: This exception was caught from a finalizer, which likely means it was not caused by Aggregated Income itself, ")
+                   .Append(" but more likely caused instead by either a different mod, a bad mod interaction, or the game itself.");
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(outputType), outputType, "Bad output type");
+        }
+        output = output.AppendLine().AppendLine().Append("NOTE: This is not a game crash; press OK to continue playing.");
+        string outputString = output.ToString();
         if (Outputs.Contains(outputString))
             return;
         Outputs.Add(outputString);
-        _ = MessageBox.Show(outputString, "Aggregated Income" + title, MessageBoxButtons.OK, icon);
+        _ = MessageBox.Show(outputString,
+            "Aggregated Income" + outputType switch
+            {
+                OutputType.Initialization => " failed to initialize", OutputType.Exception => " encountered an exception",
+                OutputType.FinalizerException => " caught an exception from a finalizer",
+                _ => throw new ArgumentOutOfRangeException(nameof(outputType), outputType, "Bad output type")
+            }, MessageBoxButtons.OK, outputType is OutputType.Exception ? MessageBoxIcon.Error : MessageBoxIcon.Warning);
     }
 
-    internal static void DoOutput(string output, MessageBoxIcon icon = MessageBoxIcon.Error, string title = " encountered an exception")
-        => DoOutput(new StringBuilder(output), icon, title);
+    internal static void DoOutput(string output, OutputType outputType = OutputType.Exception) => DoOutput(new StringBuilder(output), outputType);
 
     private static StringBuilder GetOutputForException(Exception e)
     {
@@ -67,6 +88,5 @@ internal static class OutputUtils
 
     internal static void DoOutputForException(Exception e) => DoOutput(GetOutputForException(e));
 
-    internal static void DoOutputForFinalizer(Exception e)
-        => DoOutput(GetOutputForException(e), MessageBoxIcon.Warning, " caught an unrelated exception from a finalizer");
+    internal static void DoOutputForFinalizer(Exception e) => DoOutput(GetOutputForException(e), OutputType.FinalizerException);
 }
