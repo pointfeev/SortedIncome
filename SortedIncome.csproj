@@ -44,7 +44,7 @@
 		</PackageReference>
 		<PackageReference Include="Lib.Harmony">
 			<Version>2.2.2</Version>
-			<IncludeAssets>runtime</IncludeAssets>
+			<IncludeAssets>all</IncludeAssets>
 		</PackageReference>
 	</ItemGroup>
 	<Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
