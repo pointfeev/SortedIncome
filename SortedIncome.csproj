@@ -40,11 +40,11 @@
 	<ItemGroup>
 		<PackageReference Include="Bannerlord.ReferenceAssemblies.Core">
 			<Version>1.1.2.14580</Version>
-			<ExcludeAssets>all</ExcludeAssets>
+			<ExcludeAssets>runtime</ExcludeAssets>
 		</PackageReference>
 		<PackageReference Include="Lib.Harmony">
 			<Version>2.2.2</Version>
-			<IncludeAssets>all</IncludeAssets>
+			<IncludeAssets>runtime</IncludeAssets>
 		</PackageReference>
 	</ItemGroup>
 	<Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
