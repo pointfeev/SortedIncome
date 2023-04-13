@@ -74,24 +74,73 @@ internal static class Sorting
         return string.Empty;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool TryConvertExplainedNumber(TextObject description, TextObject variable, out string conversion)
+    {
+        try
+        {
+            string descriptionValue = Value.GetValue(description) as string;
+            if (descriptionValue is not null && Value.GetValue(variable) is string variableValue)
+                descriptionValue += ";;;" + variableValue + (variable.ToString() != variableValue ? ":::" + variable : "");
+            if (descriptionValue is null || descriptionValue.Length == 0)
+                throw new ArgumentException();
+            conversion = descriptionValue;
+            return true;
+        }
+        catch
+        {
+            conversion = null;
+            return false;
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool TryUnconvertExplainedNumber(ref string description, out string variableValue, out string variable)
+    {
+        try
+        {
+            if (description.Length == 0)
+                throw new ArgumentException();
+            int varValStart = description.IndexOf(";;;", StringComparison.Ordinal);
+            if (varValStart != -1)
+            {
+                variableValue = description.Substring(varValStart + 3);
+                description = description.Substring(0, varValStart);
+                if (description.Length == 0)
+                    throw new ArgumentException();
+                int varStart = variableValue.IndexOf(":::", StringComparison.Ordinal);
+                if (varStart != -1)
+                {
+                    variable = variableValue.Substring(varStart + 3);
+                    variableValue = variableValue.Substring(0, varStart);
+                }
+                else
+                    variable = null;
+            }
+            else
+            {
+                variableValue = null;
+                variable = null;
+            }
+            return true;
+        }
+        catch
+        {
+            variableValue = null;
+            variable = null;
+            return false;
+        }
+    }
+
     internal static bool AddTooltip(object ____explainer, float value, ref TextObject description, TextObject variable)
     {
         if (____explainer == null || description == null || variable == null || value.ApproximatelyEqualsTo(0f) || LeftAltDown)
             return true;
-        string descriptionValue;
-        try
-        {
-            descriptionValue = Value.GetValue(description) as string;
-            if (descriptionValue != null && Value.GetValue(variable) is string variableValue)
-                descriptionValue += ";;;" + variableValue + (variable.ToString() != variableValue ? ":::" + variable : "");
-        }
-        catch
-        {
+        if (!TryConvertExplainedNumber(description, variable, out string conversion))
             return true;
-        }
         try
         {
-            _ = AddLine.Invoke(____explainer, new[] { descriptionValue?.Length > 0 ? descriptionValue : description.ToString(), value, OperationType });
+            _ = AddLine.Invoke(____explainer, new[] { conversion ?? description.ToString(), value, OperationType });
         }
         catch
         {
@@ -142,13 +191,13 @@ internal static class Sorting
     internal static Exception GetTooltip(Exception __exception, ref List<TooltipProperty> __result)
     {
         if (!LeftAltDown)
-            SortTooltip(__result);
+            SortTooltip(ref __result);
         /*if (__exception != null)
             OutputUtils.DoOutputForFinalizerDoOutputForFinalizer(__exception);*/
         return null;
     }
 
-    private static void SortTooltip(List<TooltipProperty> properties)
+    private static void SortTooltip(ref List<TooltipProperty> properties)
     {
         try
         {
@@ -164,23 +213,8 @@ internal static class Sorting
                         start = i;
                     string description = property.DefinitionLabel;
                     //string debug = description;
-                    if (description.Length < 1)
+                    if (!TryUnconvertExplainedNumber(ref description, out string variableValue, out string variable))
                         continue;
-                    string variableValue = null, variable = null;
-                    int varValStart = description.IndexOf(";;;", StringComparison.Ordinal);
-                    if (varValStart != -1)
-                    {
-                        variableValue = description.Substring(varValStart + 3);
-                        description = description.Substring(0, varValStart);
-                        if (description.Length < 1)
-                            continue;
-                        int varStart = variableValue.IndexOf(":::", StringComparison.Ordinal);
-                        if (varStart != -1)
-                        {
-                            variable = variableValue.Substring(varStart + 3);
-                            variableValue = variableValue.Substring(0, varStart);
-                        }
-                    }
                     object variation = false;
                     if (description == GetModelTextValue("caravanIncome", out string caravanIncome) || description == GetModelTextValue("partyIncome")
                                                                                                     || description == GetModelTextValue(

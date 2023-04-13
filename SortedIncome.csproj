@@ -1,51 +1,54 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
+
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{55C47F30-373C-4C5C-81F1-450E28809134}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SortedIncome</RootNamespace>
-    <AssemblyName>$(RootNamespace)</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <OutputPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\Modules\SortedIncome\bin\Win64_Shipping_Client\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <LangVersion>latest</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Utilities\TranslationUtils.cs" />
-    <Compile Include="Sorting.cs" />
-    <Compile Include="SubModule.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Utilities\OutputUtils.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Bannerlord.ReferenceAssemblies.Core">
-      <Version>1.1.2.14580</Version>
-    </PackageReference>
-    <PackageReference Include="Lib.Harmony">
-      <Version>2.2.2</Version>
-    </PackageReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <UsingTask TaskName="Bannerlord.AutomaticSubModuleXML.AutomaticSubModuleXML" AssemblyFile="..\Bannerlord.AutomaticSubModuleXML.dll" />
-  <Target Name="AutomaticSubModuleXML" AfterTargets="Build">
-    <AutomaticSubModuleXML TargetPath="$(TargetPath)" TargetDir="$(TargetDir)" />
-  </Target>
+	<Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"
+	        Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+	<PropertyGroup>
+		<Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+		<Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+		<ProjectGuid>{55C47F30-373C-4C5C-81F1-450E28809134}</ProjectGuid>
+		<OutputType>Library</OutputType>
+		<AppDesignerFolder>Properties</AppDesignerFolder>
+		<RootNamespace>SortedIncome</RootNamespace>
+		<AssemblyName>$(RootNamespace)</AssemblyName>
+		<TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+		<FileAlignment>512</FileAlignment>
+		<Deterministic>true</Deterministic>
+		<TargetFrameworkProfile />
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+		<OutputPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\Modules\SortedIncome\bin\Win64_Shipping_Client\</OutputPath>
+		<DefineConstants>TRACE</DefineConstants>
+		<Optimize>true</Optimize>
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<LangVersion>latest</LangVersion>
+		<ErrorReport>prompt</ErrorReport>
+	</PropertyGroup>
+	<ItemGroup>
+		<Reference Include="System" />
+		<Reference Include="System.Core" />
+		<Reference Include="System.Windows.Forms" />
+		<Reference Include="System.Xml" />
+	</ItemGroup>
+	<ItemGroup>
+		<Compile Include="Utilities\TranslationUtils.cs" />
+		<Compile Include="Sorting.cs" />
+		<Compile Include="SubModule.cs" />
+		<Compile Include="Properties\AssemblyInfo.cs" />
+		<Compile Include="Utilities\OutputUtils.cs" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Bannerlord.ReferenceAssemblies.Core">
+			<Version>1.1.2.14580</Version>
+		</PackageReference>
+		<PackageReference Include="Lib.Harmony">
+			<Version>2.2.2</Version>
+		</PackageReference>
+	</ItemGroup>
+	<Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+	<UsingTask TaskName="Bannerlord.AutomaticSubModuleXML.AutomaticSubModuleXML"
+	           AssemblyFile="..\Bannerlord.AutomaticSubModuleXML.dll" />
+	<Target Name="AutomaticSubModuleXML" AfterTargets="Build">
+		<AutomaticSubModuleXML TargetPath="$(TargetPath)" TargetDir="$(TargetDir)" />
+	</Target>
 </Project>
