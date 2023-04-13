@@ -26,15 +26,12 @@ internal static class Sorting
     private static readonly Dictionary<string, Settlement> SettlementCache = new();
 
     private static MBReadOnlyList<PolicyObject> policyObjects;
-
     private static readonly Dictionary<string, PolicyObject> PolicyObjectCache = new();
 
     private static MBReadOnlyList<BuildingType> buildingTypes;
-
     private static readonly Dictionary<string, BuildingType> BuildingTypesCache = new();
 
     private static MBReadOnlyList<ItemCategory> itemCategories;
-
     private static readonly Dictionary<string, ItemCategory> ItemCategoryCache = new();
 
     internal static FieldInfo Value;
@@ -55,7 +52,7 @@ internal static class Sorting
         if (ModelTextValues.TryGetValue(key, out string str))
             return str;
         if (!ignoreFailure)
-            OutputUtils.DoOutput("Failed to get DefaultClanFinanceModel TextObject field: " + key);
+            OutputUtils.DoOutput(new("Failed to get DefaultClanFinanceModel TextObject field: " + key));
         return string.Empty;
     }
 
@@ -73,7 +70,7 @@ internal static class Sorting
         if (!str.StartsWith("{=!}ERROR"))
             return str;
         if (!ignoreFailure)
-            OutputUtils.DoOutput("Failed to get GameTexts TextObject field: " + key);
+            OutputUtils.DoOutput(new("Failed to get GameTexts TextObject field: " + key));
         return string.Empty;
     }
 

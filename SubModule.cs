@@ -16,6 +16,13 @@ namespace SortedIncome;
 
 public class SubModule : MBSubModuleBase
 {
+    internal const string Name = "Aggregated Income";
+    internal const string Version = "4.2.3";
+    internal const string Url = "https://www.nexusmods.com/mountandblade2bannerlord/mods/3320";
+    internal const string Copyright = "2021, pointfeev (https://github.com/pointfeev)";
+    internal const string MinimumGameVersion = "1.0.0";
+    internal static readonly string Id = typeof(SubModule).Namespace;
+
     private bool initialized;
 
     protected override void OnBeforeInitialModuleScreenSetAsRoot()
@@ -63,10 +70,10 @@ public class SubModule : MBSubModuleBase
             }
             if (failures.Count > 0)
             {
-                OutputUtils.DoOutput(string.Join("\n", failures), OutputType.Initialization);
+                OutputUtils.DoOutput(new(string.Join("\n", failures)), OutputType.Initialization);
                 return;
             }
-            Harmony harmony = new("pointfeev.sortedincome");
+            Harmony harmony = new("pointfeev." + Id.ToLower());
             HarmonyMethod get = new(typeof(Sorting), nameof(Sorting.GetTooltip));
             _ = harmony.Patch(AccessTools.Method(typeof(CampaignUIHelper), nameof(CampaignUIHelper.GetTooltipForAccumulatingProperty)), finalizer: get);
             _ = harmony.Patch(AccessTools.Method(typeof(CampaignUIHelper), nameof(CampaignUIHelper.GetTooltipForAccumulatingPropertyWithResult)),
