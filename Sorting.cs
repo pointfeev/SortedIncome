@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using SortedIncome.Utilities;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Extensions;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Buildings;
@@ -34,6 +35,9 @@ internal static class Sorting
     private static MBReadOnlyList<ItemCategory> itemCategories;
     private static readonly Dictionary<string, ItemCategory> ItemCategoryCache = new();
 
+    private static MBReadOnlyList<PerkObject> perkObjects;
+    private static readonly Dictionary<string, PerkObject> PerkObjectCache = new();
+
     internal static FieldInfo Value;
     internal static readonly Dictionary<string, string> ModelTextValues = new();
     internal static MethodInfo AddLine;
@@ -44,7 +48,7 @@ internal static class Sorting
     private static bool wasLeftAltDown = LeftAltDown;
     private static bool LeftAltDown => InputKey.LeftAlt.IsDown();
 
-    internal static void IncludeDetails(ref bool includeDetails) => includeDetails = true;
+    internal static void IncludeDetails(bool applyWithdrawals, ref bool includeDetails) => includeDetails = !applyWithdrawals;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static string GetModelTextValue(string key, bool ignoreFailure = false)
@@ -167,21 +171,27 @@ internal static class Sorting
         return null;
     }
 
+    private static void ResetTooltip(PropertyBasedTooltipVM __instance)
+    {
+        if (currentTooltipFunc == null || __instance is not { IsActive: true })
+            return;
+        try
+        {
+            InformationManager.ShowTooltip(typeof(List<TooltipProperty>), currentTooltipFunc());
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
     internal static Exception TickTooltip(Exception __exception, PropertyBasedTooltipVM __instance)
     {
         bool leftAltDown = LeftAltDown;
         if (wasLeftAltDown != leftAltDown)
         {
             wasLeftAltDown = leftAltDown;
-            if (currentTooltipFunc != null && __instance is { IsActive: true })
-                try
-                {
-                    InformationManager.ShowTooltip(typeof(List<TooltipProperty>), currentTooltipFunc());
-                }
-                catch
-                {
-                    // ignore
-                }
+            ResetTooltip(__instance);
         }
         /*if (__exception != null)
             OutputUtils.DoOutputForFinalizer(__exception);*/
@@ -247,8 +257,11 @@ internal static class Sorting
                           && buildingType.GetBaseBuildingEffectAmount(BuildingEffectEnum.FoodProduction, buildingType.StartLevel) > 0) // food
                         description = SetupStrings("Building production", "from", ("building", "buildings"));
                     else if (TryGetItemCategoryFromName(description, out ItemCategory itemCategory)
-                          && itemCategory.Properties == ItemCategory.Property.BonusToFoodStores) // food
+                          && itemCategory.Properties is ItemCategory.Property.BonusToFoodStores) // food
                         description = SetupStrings("Sold food goods", "from", ("good", "goods"));
+                    /*else if (TryGetPerkObjectFromName(description, out PerkObject perkObject) && (perkObject.PrimaryRole is SkillEffect.PerkRole.Governor
+                                                                                               || perkObject.SecondaryRole is SkillEffect.PerkRole.Governor))
+                        description = SetupStrings("Governor perks", "from", ("perk", "perks")); // militia, food, loyalty, security, prosperity, settlement tax*/
                     // Improved Garrisons support
                     else if (description.StartsWith("{=misc_costmodel_trainingcosts}") || description.StartsWith("Improved Garrison Training of ")) // denars
                         description = SetupStrings("Garrison training", "for", ("garrison", "garrisons"));
@@ -387,6 +400,24 @@ internal static class Sorting
         {
             itemCategory = c;
             ItemCategoryCache[name] = itemCategory;
+            return true;
+        }
+        return false;
+    }
+
+    private static bool TryGetPerkObjectFromName(string name, out PerkObject perkObject)
+    {
+        perkObject = null;
+        if (string.IsNullOrWhiteSpace(name))
+            return false;
+        if (PerkObjectCache.TryGetValue(name, out perkObject))
+            return perkObject is not null;
+        if (Campaign.Current is null || (perkObjects = PerkObject.All) is null)
+            return false;
+        foreach (PerkObject c in perkObjects.Where(c => c?.ToString() == name))
+        {
+            perkObject = c;
+            PerkObjectCache[name] = perkObject;
             return true;
         }
         return false;
