@@ -6,7 +6,6 @@
 	<PropertyGroup>
 		<Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
 		<Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-		<ProjectGuid>{55C47F30-373C-4C5C-81F1-450E28809134}</ProjectGuid>
 		<OutputType>Library</OutputType>
 		<AppDesignerFolder>Properties</AppDesignerFolder>
 		<RootNamespace>SortedIncome</RootNamespace>
@@ -38,13 +37,13 @@
 		<Compile Include="Utilities\OutputUtils.cs" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Bannerlord.ReferenceAssemblies.Core">
-			<Version>1.1.2.14580</Version>
-			<ExcludeAssets>runtime</ExcludeAssets>
-		</PackageReference>
-		<PackageReference Include="Lib.Harmony">
+		<PackageReference Include="Bannerlord.Lib.Harmony">
 			<Version>2.2.2</Version>
 			<IncludeAssets>all</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Bannerlord.ReferenceAssemblies">
+			<Version>1.1.2.14580</Version>
+			<ExcludeAssets>runtime</ExcludeAssets>
 		</PackageReference>
 	</ItemGroup>
 	<Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
