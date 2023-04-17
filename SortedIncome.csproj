@@ -14,6 +14,7 @@
 		<FileAlignment>512</FileAlignment>
 		<Deterministic>true</Deterministic>
 		<TargetFrameworkProfile />
+		<ProjectGuid>{55C47F30-373C-4C5C-81F1-450E28809134}</ProjectGuid>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
 		<OutputPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\Modules\SortedIncome\bin\Win64_Shipping_Client\</OutputPath>
@@ -42,8 +43,9 @@
 			<IncludeAssets>all</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Bannerlord.ReferenceAssemblies">
-			<Version>1.1.2.14580</Version>
+			<Version>1.1.3.16165</Version>
 			<ExcludeAssets>runtime</ExcludeAssets>
+			<IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 	</ItemGroup>
 	<Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
