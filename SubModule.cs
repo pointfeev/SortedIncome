@@ -16,12 +16,10 @@ namespace SortedIncome;
 
 public class SubModule : MBSubModuleBase
 {
+    internal const string Id = "SortedIncome";
     internal const string Name = "Aggregated Income";
     internal const string Version = "4.2.4";
-    internal const string Url = "https://www.nexusmods.com/mountandblade2bannerlord/mods/3320";
-    internal const string Copyright = "2021, pointfeev (https://github.com/pointfeev)";
     internal const string MinimumGameVersion = "1.0.0";
-    internal static readonly string Id = typeof(SubModule).Namespace;
 
     private bool initialized;
 
