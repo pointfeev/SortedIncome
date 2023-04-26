@@ -15,7 +15,6 @@ using SortedIncome;
 [assembly: ModuleDefault(true)]
 [assembly: ModuleCategory("Singleplayer")]
 [assembly: ModuleType("Community")]
-[assembly: ModuleUrl("https://www.nexusmods.com/mountandblade2bannerlord/mods/3304")]
 [assembly: ModuleDependedModule("Bannerlord.Harmony", "v2.2.2")]
 [assembly: ModuleDependedModule("Native", "v" + SubModule.MinimumGameVersion)]
 [assembly: ModuleDependedModule("SandBoxCore", "v" + SubModule.MinimumGameVersion)]
