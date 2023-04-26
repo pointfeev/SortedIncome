@@ -13,16 +13,15 @@
 		<TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
 		<FileAlignment>512</FileAlignment>
 		<Deterministic>true</Deterministic>
-		<TargetFrameworkProfile />
 		<ProjectGuid>{55C47F30-373C-4C5C-81F1-450E28809134}</ProjectGuid>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-		<OutputPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\Modules\SortedIncome\bin\Win64_Shipping_Client\</OutputPath>
-		<DefineConstants>TRACE</DefineConstants>
 		<Optimize>true</Optimize>
-		<PlatformTarget>AnyCPU</PlatformTarget>
-		<LangVersion>latest</LangVersion>
+		<OutputPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\Modules\$(RootNamespace)\bin\Win64_Shipping_Client\</OutputPath>
+		<DefineConstants>TRACE</DefineConstants>
 		<ErrorReport>prompt</ErrorReport>
+		<LangVersion>latest</LangVersion>
+		<PlatformTarget>AnyCPU</PlatformTarget>
 	</PropertyGroup>
 	<ItemGroup>
 		<Reference Include="Bannerlord.AutomaticSubModuleXML">
@@ -42,12 +41,12 @@
 		<Compile Include="Utilities\OutputUtils.cs" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Bannerlord.Lib.Harmony">
-			<Version>2.2.2</Version>
-			<ExcludeAssets>runtime</ExcludeAssets>
-		</PackageReference>
 		<PackageReference Include="Bannerlord.ReferenceAssemblies">
 			<Version>1.1.3.16165</Version>
+			<ExcludeAssets>runtime</ExcludeAssets>
+		</PackageReference>
+		<PackageReference Include="Lib.Harmony">
+			<Version>2.3.0-alpha.5</Version>
 			<ExcludeAssets>runtime</ExcludeAssets>
 		</PackageReference>
 	</ItemGroup>

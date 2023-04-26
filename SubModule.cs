@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
+using SortedIncome.Properties;
 using SortedIncome.Utilities;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.GameComponents;
@@ -16,11 +17,6 @@ namespace SortedIncome;
 
 public class SubModule : MBSubModuleBase
 {
-    internal const string Id = "SortedIncome";
-    internal const string Name = "Aggregated Income";
-    internal const string Version = "4.2.4";
-    internal const string MinimumGameVersion = "1.0.0";
-
     private bool initialized;
 
     protected override void OnBeforeInitialModuleScreenSetAsRoot()
@@ -71,7 +67,7 @@ public class SubModule : MBSubModuleBase
                 OutputUtils.DoOutput(new(string.Join("\n", failures)), OutputType.Initialization);
                 return;
             }
-            Harmony harmony = new("pointfeev." + Id.ToLower());
+            Harmony harmony = new("pointfeev." + AssemblyInfo.Id.ToLower());
             HarmonyMethod get = new(typeof(Sorting), nameof(Sorting.GetTooltip));
             _ = harmony.Patch(AccessTools.Method(typeof(CampaignUIHelper), nameof(CampaignUIHelper.GetTooltipForAccumulatingProperty)), finalizer: get);
             _ = harmony.Patch(AccessTools.Method(typeof(CampaignUIHelper), nameof(CampaignUIHelper.GetTooltipForAccumulatingPropertyWithResult)),
