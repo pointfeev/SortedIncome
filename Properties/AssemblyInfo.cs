@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
-using Bannerlord.AutomaticSubModuleXML;
+using ASMXML;
 using SortedIncome;
 using SortedIncome.Properties;
 

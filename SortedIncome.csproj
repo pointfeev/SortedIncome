@@ -25,9 +25,8 @@
 		<DebugSymbols>true</DebugSymbols>
 	</PropertyGroup>
 	<ItemGroup>
-		<Reference Include="Bannerlord.AutomaticSubModuleXML">
-			<HintPath>..\Bannerlord.AutomaticSubModuleXML.dll</HintPath>
-			<Private>False</Private>
+		<Reference Include="ASMXML">
+			<HintPath>..\ASMXML.dll</HintPath>
 		</Reference>
 		<Reference Include="System" />
 		<Reference Include="System.Core" />
@@ -52,8 +51,7 @@
 		</PackageReference>
 	</ItemGroup>
 	<Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-	<UsingTask TaskName="Bannerlord.AutomaticSubModuleXML.AutomaticSubModuleXML"
-	           AssemblyFile="..\Bannerlord.AutomaticSubModuleXML.dll" />
+	<UsingTask TaskName="ASMXML.AutomaticSubModuleXML" AssemblyFile="..\ASMXML.dll" />
 	<Target Name="AutomaticSubModuleXML" AfterTargets="Build">
 		<AutomaticSubModuleXML Target="$(TargetPath)" />
 	</Target>
