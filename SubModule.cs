@@ -17,16 +17,16 @@ namespace SortedIncome;
 
 public class SubModule : MBSubModuleBase
 {
-    private bool initialized;
+    private static bool patched;
 
     protected override void OnBeforeInitialModuleScreenSetAsRoot()
     {
         base.OnBeforeInitialModuleScreenSetAsRoot();
         try
         {
-            if (initialized)
+            if (patched)
                 return;
-            initialized = true;
+            patched = true;
             List<string> failures = new();
             Sorting.Value = AccessTools.Field(typeof(TextObject), "Value");
             if (Sorting.Value == null)
