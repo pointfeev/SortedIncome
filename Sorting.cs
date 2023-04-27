@@ -288,7 +288,7 @@ internal static class Sorting
                     {
                         _ = line.variationMentions.TryGetValue(variation, out int mentions);
                         line.variationMentions[variation] = mentions + 1;
-                        Lines[description] = (line.number + number, line.variationMentions, Math.Max(line.textHeight, textHeight));
+                        Lines[description] = (line.number + number, line.variationMentions, Math.Max((int)line.textHeight, textHeight));
                     }
                     else
                         Lines[description] = (number, new() { [variation] = 1 }, textHeight);
@@ -331,7 +331,7 @@ internal static class Sorting
     private static string GetFinalDescription(string name, int mentions)
         => !Strings.TryGetValue(name, out (string prefix, (string singular, string plural) suffix) strings)
             ? name
-            : name + $" ({strings.prefix} {mentions} {(mentions == 1 ? strings.suffix.singular : strings.suffix.plural)})";
+            : name + $" ({(string)strings.prefix} {mentions} {(string)(mentions == 1 ? strings.suffix.singular : strings.suffix.plural)})";
 
     private static bool TryGetSettlementFromName(string name, out Settlement settlement)
     {
