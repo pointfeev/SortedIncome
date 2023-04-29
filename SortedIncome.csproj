@@ -1,6 +1,6 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="15.0">
 	<Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"
 	        Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
 	<PropertyGroup>
@@ -15,20 +15,16 @@
 		<Deterministic>true</Deterministic>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-		<Optimize>true</Optimize>
-		<OutputPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\Modules\$(RootNamespace)\bin\Win64_Shipping_Client\</OutputPath>
+		<OutputPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\Modules\$(RootNamespace)\bin\Win64_Shipping_Client</OutputPath>
 		<DefineConstants>TRACE</DefineConstants>
 		<ErrorReport>prompt</ErrorReport>
 		<LangVersion>latest</LangVersion>
 		<PlatformTarget>AnyCPU</PlatformTarget>
+		<Optimize>true</Optimize>
 		<DebugType>full</DebugType>
 		<DebugSymbols>true</DebugSymbols>
 	</PropertyGroup>
 	<ItemGroup>
-		<Reference Include="ASMXML">
-			<HintPath>..\ASMXML.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
 		<Reference Include="System" />
 		<Reference Include="System.Core" />
 		<Reference Include="System.Windows.Forms" />
@@ -54,6 +50,35 @@
 	<Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 	<UsingTask TaskName="ASMXML.AutomaticSubModuleXML" AssemblyFile="..\ASMXML.dll" />
 	<Target Name="AutomaticSubModuleXML" AfterTargets="Build">
-		<AutomaticSubModuleXML Target="$(TargetPath)" />
+		<PropertyGroup>
+			<Id>SortedIncome</Id>
+			<Name>Aggregated Income</Name>
+			<Version>4.2.5</Version>
+			<Default>true</Default>
+			<Category>Singleplayer</Category>
+			<Type>Community</Type>
+			<HarmonyVersion>v2.3.0</HarmonyVersion>
+			<MinimumGameVersion>v1.0.0</MinimumGameVersion>
+		</PropertyGroup>
+		<ItemGroup>
+			<DependedModules Include="Bannerlord.Harmony;$(HarmonyVersion)" />
+			<DependedModules Include="Native;$(MinimumGameVersion)" />
+			<DependedModules Include="SandBoxCore;$(MinimumGameVersion)" />
+			<DependedModules Include="Sandbox;$(MinimumGameVersion)" />
+			<DependedModules Include="StoryMode;$(MinimumGameVersion)" />
+			<DependedModules Include="CustomBattle;$(MinimumGameVersion);true" />
+			<DependedModules Include="BirthAndDeath;$(MinimumGameVersion);true" />
+			<SubModules Include="$(Id);$(Id).dll;$(Id).SubModule" />
+		</ItemGroup>
+		<AutomaticSubModuleXML
+			OutputPath="$(OutputPath)"
+			Id="$(Id)"
+			Name="$(Name)"
+			Version="$(Version)"
+			DefaultModule="$(Default)"
+			ModuleCategory="$(Category)"
+			ModuleType="$(Type)"
+			DependedModules="@(DependedModules)"
+			SubModules="@(SubModules)" />
 	</Target>
 </Project>

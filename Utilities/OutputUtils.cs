@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
-using SortedIncome.Properties;
 using TaleWorlds.ModuleManager;
 
 namespace SortedIncome.Utilities;
@@ -15,7 +14,7 @@ internal static class OutputUtils
 
     internal static void DoOutput(StringBuilder output, OutputType outputType = OutputType.Exception)
     {
-        output = output.AppendLine().AppendLine().Append("Module version: " + ModuleHelper.GetModuleInfo(AssemblyInfo.Id).Version);
+        output = output.AppendLine().AppendLine().Append("Module version: " + ModuleHelper.GetModuleInfo(SubModule.Id).Version);
         output = output.AppendLine().Append("Game version: " + ModuleHelper.GetModuleInfo("Native").Version);
         switch (outputType)
         {
@@ -29,8 +28,8 @@ internal static class OutputUtils
                 break;
             case OutputType.FinalizerException:
                 output = output.AppendLine().AppendLine()
-                   .Append("BUG REPORTING: This exception was caught from a finalizer, which likely means it was not caused by " + AssemblyInfo.Name
-                      + " itself, ").Append(" but more likely caused instead by either a different mod, a bad mod interaction, or the game itself.");
+                   .Append("BUG REPORTING: This exception was caught from a finalizer, which likely means it was not caused by " + SubModule.Name + " itself, ")
+                   .Append(" but more likely caused instead by either a different mod, a bad mod interaction, or the game itself.");
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(outputType), outputType, "Bad output type");
@@ -40,7 +39,7 @@ internal static class OutputUtils
         if (!Outputs.Add(builtOutput))
             return;
         _ = MessageBox.Show(builtOutput,
-            AssemblyInfo.Name + outputType switch
+            SubModule.Name + outputType switch
             {
                 OutputType.Initialization => " failed to initialize", OutputType.Exception => " encountered an exception",
                 OutputType.FinalizerException => " caught an exception from a finalizer",
@@ -66,7 +65,7 @@ internal static class OutputUtils
                 {
                     int atNum = line.IndexOf("at ", StringComparison.Ordinal);
                     int inNum = line.IndexOf("in ", StringComparison.Ordinal);
-                    int siNum = line.LastIndexOf(AssemblyInfo.Id + @"\", StringComparison.Ordinal);
+                    int siNum = line.LastIndexOf(SubModule.Id + @"\", StringComparison.Ordinal);
                     int lineNum = line.LastIndexOf(":line ", StringComparison.Ordinal);
                     if (atNum != -1)
                         _ = output.Append("\n    " + (inNum != -1 ? line.Substring(atNum, inNum - atNum) : line.Substring(atNum)) + (inNum != -1
