@@ -53,7 +53,7 @@
 		<PropertyGroup>
 			<Id>SortedIncome</Id>
 			<Name>Aggregated Income</Name>
-			<Version>4.2.5</Version>
+			<Version>v4.2.5</Version>
 			<Default>true</Default>
 			<Category>Singleplayer</Category>
 			<Type>Community</Type>
