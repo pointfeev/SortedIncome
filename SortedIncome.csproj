@@ -61,14 +61,14 @@
 			<MinimumGameVersion>v1.0.0</MinimumGameVersion>
 		</PropertyGroup>
 		<ItemGroup>
-			<DependedModules Include="Bannerlord.Harmony;$(HarmonyVersion)" />
-			<DependedModules Include="Native;$(MinimumGameVersion)" />
-			<DependedModules Include="SandBoxCore;$(MinimumGameVersion)" />
-			<DependedModules Include="Sandbox;$(MinimumGameVersion)" />
-			<DependedModules Include="StoryMode;$(MinimumGameVersion)" />
-			<DependedModules Include="CustomBattle;$(MinimumGameVersion);true" />
-			<DependedModules Include="BirthAndDeath;$(MinimumGameVersion);true" />
-			<SubModules Include="$(Id);$(Id).dll;$(Id).SubModule" />
+			<DependedModules Include="Bannerlord.Harmony, $(HarmonyVersion)" />
+			<DependedModules Include="Native, $(MinimumGameVersion)" />
+			<DependedModules Include="SandBoxCore, $(MinimumGameVersion)" />
+			<DependedModules Include="Sandbox, $(MinimumGameVersion)" />
+			<DependedModules Include="StoryMode, $(MinimumGameVersion)" />
+			<DependedModules Include="CustomBattle, $(MinimumGameVersion), true" />
+			<DependedModules Include="BirthAndDeath, $(MinimumGameVersion), true" />
+			<SubModules Include="$(Id), $(Id).dll, $(Id).SubModule" />
 		</ItemGroup>
 		<AutomaticSubModuleXML
 			OutputPath="$(OutputPath)"
