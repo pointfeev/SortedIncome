@@ -293,8 +293,11 @@ internal static class Sorting
                     else
                         Lines[description] = (number, new() { [variation] = 1 }, textHeight);
                 }
-                else if (start != -1 && end == -1)
+                else if (start != -1)
+                {
                     end = i - 1;
+                    break;
+                }
             }
             if (start == -1 || end == -1)
                 return;

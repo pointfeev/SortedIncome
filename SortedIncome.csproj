@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="15.0">
 	<Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"
@@ -39,12 +39,12 @@
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Bannerlord.ReferenceAssemblies">
-			<Version>1.1.3.16165</Version>
-			<IncludeAssets>compile</IncludeAssets>
+			<Version>1.1.4.17949</Version>
+			<ExcludeAssets>runtime</ExcludeAssets>
 		</PackageReference>
 		<PackageReference Include="Lib.Harmony">
 			<Version>2.3.0-alpha.5</Version>
-			<IncludeAssets>compile</IncludeAssets>
+			<ExcludeAssets>runtime</ExcludeAssets>
 		</PackageReference>
 	</ItemGroup>
 	<Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -54,7 +54,7 @@
 			<Id>SortedIncome</Id>
 			<Name>Aggregated Income</Name>
 			<Version>v4.2.5</Version>
-			<Default>true</Default>
+			<Default>false</Default>
 			<Category>Singleplayer</Category>
 			<Type>Community</Type>
 			<HarmonyVersion>v2.3.0</HarmonyVersion>
@@ -70,15 +70,8 @@
 			<DependedModules Include="BirthAndDeath, $(MinimumGameVersion), true" />
 			<SubModules Include="$(Id), $(Id).dll, $(Id).SubModule" />
 		</ItemGroup>
-		<AutomaticSubModuleXML
-			OutputPath="$(OutputPath)"
-			Id="$(Id)"
-			Name="$(Name)"
-			Version="$(Version)"
-			DefaultModule="$(Default)"
-			ModuleCategory="$(Category)"
-			ModuleType="$(Type)"
-			DependedModules="@(DependedModules)"
-			SubModules="@(SubModules)" />
+		<AutomaticSubModuleXML OutputPath="$(OutputPath)" Id="$(Id)" Name="$(Name)" Version="$(Version)"
+		                       DefaultModule="$(Default)" ModuleCategory="$(Category)" ModuleType="$(Type)"
+		                       DependedModules="@(DependedModules)" SubModules="@(SubModules)" />
 	</Target>
 </Project>
