@@ -43,7 +43,7 @@
 			<ExcludeAssets>runtime</ExcludeAssets>
 		</PackageReference>
 		<PackageReference Include="Lib.Harmony">
-			<Version>2.3.0-alpha.5</Version>
+			<Version>2.2.2</Version>
 			<ExcludeAssets>runtime</ExcludeAssets>
 		</PackageReference>
 	</ItemGroup>
@@ -53,11 +53,11 @@
 		<PropertyGroup>
 			<Id>SortedIncome</Id>
 			<Name>Aggregated Income</Name>
-			<Version>v4.2.5</Version>
+			<Version>v4.2.6</Version>
 			<Default>false</Default>
 			<Category>Singleplayer</Category>
 			<Type>Community</Type>
-			<HarmonyVersion>v2.3.0</HarmonyVersion>
+			<HarmonyVersion>v2.2.2</HarmonyVersion>
 			<MinimumGameVersion>v1.0.0</MinimumGameVersion>
 		</PropertyGroup>
 		<ItemGroup>

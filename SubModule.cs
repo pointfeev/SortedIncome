@@ -18,7 +18,7 @@ public class SubModule : MBSubModuleBase
 {
     internal const string Id = "SortedIncome";
     internal const string Name = "Aggregated Income";
-    internal const string Version = "4.2.5";
+    internal const string Version = "4.2.6";
 
     private static bool patched;
 
