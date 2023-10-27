@@ -173,7 +173,7 @@ internal static class Sorting
 
     private static void ResetTooltip(PropertyBasedTooltipVM __instance)
     {
-        if (currentTooltipFunc == null || __instance is not { IsActive: true })
+        if (currentTooltipFunc == null)
             return;
         try
         {

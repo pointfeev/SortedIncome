@@ -18,7 +18,9 @@ public class SubModule : MBSubModuleBase
 {
     internal const string Id = "SortedIncome";
     internal const string Name = "Aggregated Income";
-    internal const string Version = "4.2.6";
+    internal const string Version = "4.2.7";
+
+    internal static ApplicationVersion NativeVersion = ModuleHelper.GetModuleInfo("Native").Version;
 
     private static bool patched;
 
@@ -78,12 +80,12 @@ public class SubModule : MBSubModuleBase
             HarmonyMethod tick = new(typeof(Sorting), nameof(Sorting.TickTooltip));
             _ = harmony.Patch(AccessTools.Method(typeof(PropertyBasedTooltipVM), nameof(PropertyBasedTooltipVM.Tick)), finalizer: tick);
             HarmonyMethod show = new(typeof(Sorting), nameof(Sorting.ShowTooltip));
-            _ = harmony.Patch(AccessTools.Method(typeof(PropertyBasedTooltipVM), nameof(PropertyBasedTooltipVM.OnShowTooltip)), finalizer: show);
+            _ = harmony.Patch(AccessTools.Method(typeof(InformationManager), nameof(InformationManager.ShowTooltip)), finalizer: show);
             HarmonyMethod begin = new(typeof(Sorting), nameof(Sorting.BeginTooltip));
             _ = harmony.Patch(AccessTools.Method(typeof(BasicTooltipViewModel), nameof(BasicTooltipViewModel.ExecuteBeginHint)), finalizer: begin);
             HarmonyMethod add = new(typeof(Sorting), nameof(Sorting.AddTooltip));
             _ = harmony.Patch(AccessTools.Method(typeof(ExplainedNumber), nameof(ExplainedNumber.Add)), add);
-            if (ModuleHelper.GetModuleInfo("Native").Version < ApplicationVersion.FromString("v1.1.0"))
+            if (NativeVersion < ApplicationVersion.FromString("v1.1.0"))
                 return;
             HarmonyMethod include = new(typeof(Sorting), nameof(Sorting.IncludeDetails));
             _ = harmony.Patch(AccessTools.Method(typeof(DefaultClanFinanceModel), nameof(DefaultClanFinanceModel.CalculateClanGoldChange)), include);
