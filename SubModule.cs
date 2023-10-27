@@ -32,6 +32,15 @@ public class SubModule : MBSubModuleBase
             if (patched)
                 return;
             patched = true;
+            if (NativeVersion >= ApplicationVersion.FromString("v1.2.0"))
+            {
+                OutputUtils.DoOutput(new("Aggregated Income has been discontinued as of v1.2.0+!\n\n"
+                  + "The main expected change tooltip has been grouped by TaleWorlds in the latest versions, "
+                  + "and thus this mod seems to no longer really be necessary nor worth it to maintain.\n\n"
+                  + "You should unsubscribe from/uninstall the mod.\n\n"
+                  + "Thanks for sticking with the mod up to v1.2.0; I hope it served you well!"), OutputType.Initialization);
+                return;
+            }
             List<string> failures = new();
             Sorting.Value = AccessTools.Field(typeof(TextObject), "Value");
             if (Sorting.Value == null)
